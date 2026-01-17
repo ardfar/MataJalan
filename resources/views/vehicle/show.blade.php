@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        {{ __('TARGET_PROFILE') }} // {{ $plate_number }}
+        {{ __('TARGET_PROFILE') }} // {{ $vehicle ? $vehicle->plate_number : $plate_number }}
     </x-slot>
 
     <div class="py-12">
@@ -14,7 +14,7 @@
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                         <div>
                             <div class="flex items-center gap-3 mb-1">
-                                <h1 class="text-4xl font-mono font-bold text-slate-100 tracking-tight">{{ $plate_number }}</h1>
+                                <h1 class="text-4xl font-mono font-bold text-slate-100 tracking-tight">{{ $vehicle ? $vehicle->plate_number : $plate_number }}</h1>
                                 @if($vehicle && $vehicle->ratings_avg_rating && $vehicle->ratings_avg_rating < 2.5)
                                     <span class="px-2 py-1 bg-red-900/30 border border-red-500/50 text-red-400 text-[10px] font-mono font-bold rounded">HIGH_THREAT</span>
                                 @else

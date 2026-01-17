@@ -85,19 +85,24 @@ class WebController extends Controller
     public function search(Request $request)
     {
         $request->validate(['plate_number' => 'required|string']);
-        $plate = strtoupper(str_replace(' ', '', $request->plate_number));
         
-        // Redirect to standardized plate URL
-        return redirect()->route('vehicle.show', ['plate_number' => $plate]);
+        $normalizedInput = Vehicle::normalizePlate($request->plate_number);
+        
+        // Try to find existing vehicle by normalized plate to get the original formatting
+        $vehicle = Vehicle::where('normalized_plate_number', $normalizedInput)->first();
+        
+        if ($vehicle) {
+            // If found, redirect to the canonical URL with original formatting
+            return redirect()->route('vehicle.show', ['plate_number' => $vehicle->plate_number]);
+        }
+        
+        // If not found, redirect to standardized/normalized version
+        return redirect()->route('vehicle.show', ['plate_number' => $normalizedInput]);
     }
 
     public function show($plate_number)
     {
-        // Normalize for display or query if needed, but we store as is or normalized?
-        // Let's assume we store standardized "B1234XYZ" (no spaces) or "B 1234 XYZ".
-        // The previous test used spaces. Let's try to find fuzzy or exact.
-        // For simplicity, let's stick to exact matching or simple normalization.
-        
+        // 1. Try exact match first
         $vehicle = Vehicle::where('plate_number', $plate_number)
             ->with(['ratings.user' => function($query) {
                 $query->select('id', 'name');
@@ -105,6 +110,21 @@ class WebController extends Controller
             ->withAvg('ratings', 'rating')
             ->withCount('ratings')
             ->first();
+
+        // 2. If not found, try fuzzy match using normalized column
+        if (!$vehicle) {
+            $normalizedInput = Vehicle::normalizePlate($plate_number);
+            $vehicle = Vehicle::where('normalized_plate_number', $normalizedInput)
+                ->with(['ratings.user' => function($query) {
+                    $query->select('id', 'name');
+                }])
+                ->withAvg('ratings', 'rating')
+                ->withCount('ratings')
+                ->first();
+                
+            // Optional: If found via fuzzy match but URL is different, we could redirect to canonical URL.
+            // But for now, showing the result is enough and less confusing than multiple redirects if not handled carefully.
+        }
 
         return view('vehicle.show', compact('vehicle', 'plate_number'));
     }
