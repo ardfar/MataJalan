@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MATAJALAN_OS // Surveillance System</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Google Fonts (Optional for monospace look) -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Scrollbar for Cyberpunk feel */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #020617; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b; 
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #06b6d4; 
+        }
+
+        /* Utility for slide-over panel */
+        .panel-hidden {
+            transform: translateX(100%);
+        }
+        .panel-visible {
+            transform: translateX(0%);
+        }
+        
+        /* Grid Background Pattern */
+        .bg-grid-pattern {
+            background-image: linear-gradient(to right, #0891b2 1px, transparent 1px), linear-gradient(to bottom, #0891b2 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-300 font-sans selection:bg-cyan-500/30 selection:text-cyan-200 overflow-hidden h-screen flex flex-col relative">
+
+    <!-- Background Grid Effect -->
+    <div class="fixed inset-0 pointer-events-none z-0 opacity-10 bg-grid-pattern"></div>
+
+    <!-- HEADER -->
+    <header class="z-20 border-b border-slate-800 bg-slate-900/90 backdrop-blur-md h-16 flex items-center justify-between px-6 shrink-0">
+        <div class="flex items-center gap-4">
+            <div class="w-8 h-8 bg-cyan-900/20 border border-cyan-500 flex items-center justify-center animate-pulse">
+                <i data-lucide="eye" class="w-5 h-5 text-cyan-400"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold text-slate-100 tracking-wider">MATA<span class="text-cyan-500">JALAN</span>_OS</h1>
+                <p class="text-[10px] font-mono text-cyan-700">SURVEILLANCE & RATING SYSTEM v2.0</p>
+            </div>
+        </div>
+
+        <!-- Global Search -->
+        <div class="hidden md:flex flex-1 max-w-xl mx-8 relative group">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i data-lucide="search" class="h-4 w-4 text-slate-500 group-focus-within:text-cyan-400"></i>
+            </div>
+            <input
+                type="text"
+                id="searchInput"
+                class="block w-full pl-10 pr-3 py-2 border border-slate-700 rounded-none bg-slate-950 text-sm placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 font-mono text-cyan-100 transition-all uppercase"
+                placeholder="INPUT_LICENSE_PLATE [EX: B 1234 XYZ]"
+                autocomplete="off"
+            />
+            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                <span class="text-[10px] text-slate-600 font-mono">TYPE_TO_SCAN</span>
+            </div>
+        </div>
+
+        <!-- System Status -->
+        <div class="flex items-center gap-6 font-mono text-xs">
+            <div class="hidden lg:flex flex-col items-end">
+                <span class="text-slate-500">SYSTEM_TIME</span>
+                <span id="clock" class="text-cyan-400">00:00:00</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></div>
+                <span class="text-emerald-500">ONLINE</span>
+            </div>
+            <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center">
+                <div class="text-xs font-bold text-cyan-500">ADM</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden z-10 relative">
+        
+        <!-- SIDEBAR -->
+        <aside class="w-64 border-r border-slate-800 bg-slate-900/50 hidden md:flex flex-col shrink-0">
+            <nav class="p-4 space-y-2">
+                <button class="w-full flex items-center gap-3 px-4 py-3 text-sm font-mono border-l-2 border-cyan-500 bg-cyan-950/20 text-cyan-400 transition-all">
+                    <i data-lucide="radio" class="w-4 h-4"></i>
+                    LIVE FEED
+                </button>
+                <button class="w-full flex items-center gap-3 px-4 py-3 text-sm font-mono border-l-2 border-transparent text-slate-500 hover:text-slate-300 hover:bg-slate-800/50 transition-all">
+                    <i data-lucide="database" class="w-4 h-4"></i>
+                    VEHICLE DB
+                </button>
+                <button class="w-full flex items-center gap-3 px-4 py-3 text-sm font-mono border-l-2 border-transparent text-slate-500 hover:text-slate-300 hover:bg-slate-800/50 transition-all">
+                    <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                    INCIDENTS
+                </button>
+                <button class="w-full flex items-center gap-3 px-4 py-3 text-sm font-mono border-l-2 border-transparent text-slate-500 hover:text-slate-300 hover:bg-slate-800/50 transition-all">
+                    <i data-lucide="users" class="w-4 h-4"></i>
+                    AGENTS
+                </button>
+            </nav>
+            
+            <!-- Network Stats Widget -->
+            <div class="mt-auto p-4 border-t border-slate-800">
+                <div class="bg-slate-950 p-3 border border-slate-800">
+                    <h4 class="text-[10px] text-slate-500 uppercase font-bold mb-2">Network Stats</h4>
+                    <div class="flex justify-between text-xs font-mono mb-1">
+                        <span class="text-slate-400">Nodes</span>
+                        <span class="text-cyan-500">4,291</span>
+                    </div>
+                    <div class="flex justify-between text-xs font-mono">
+                        <span class="text-slate-400">Reports</span>
+                        <span class="text-rose-500">+128/hr</span>
+                    </div>
+                    <!-- Fake Graph -->
+                    <div class="mt-3 flex gap-0.5 items-end h-8 opacity-50">
+                        <div class="flex-1 bg-cyan-500 h-[40%]"></div>
+                        <div class="flex-1 bg-cyan-500 h-[70%]"></div>
+                        <div class="flex-1 bg-cyan-500 h-[30%]"></div>
+                        <div class="flex-1 bg-cyan-500 h-[80%]"></div>
+                        <div class="flex-1 bg-cyan-500 h-[50%]"></div>
+                        <div class="flex-1 bg-cyan-500 h-[90%]"></div>
+                        <div class="flex-1 bg-cyan-500 h-[60%]"></div>
+                        <div class="flex-1 bg-cyan-500 h-[40%]"></div>
+                        <div class="flex-1 bg-cyan-500 h-[80%]"></div>
+                        <div class="flex-1 bg-cyan-500 h-[20%]"></div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 flex overflow-hidden relative">
+            
+            <!-- Feed Column -->
+            <div id="feedContainer" class="flex-1 overflow-y-auto p-6 transition-all duration-300 w-full">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-light text-slate-100 flex items-center gap-2">
+                        <i data-lucide="target" class="text-cyan-500 w-5 h-5"></i>
+                        ACTIVE_SURVEILLANCE
+                    </h2>
+                    <div class="flex gap-2 text-xs font-mono">
+                        <span class="px-2 py-1 border border-slate-700 text-slate-400">FILTER: ALL</span>
+                        <span class="px-2 py-1 border border-slate-700 text-slate-400">SORT: NEWEST</span>
+                    </div>
+                </div>
+
+                <!-- Vehicle Grid (Populated by JS) -->
+                <div id="vehicleGrid" class="grid grid-cols-1 lg:grid-cols-1 xl:grid-cols-2 gap-4">
+                    <!-- Cards will be injected here -->
+                </div>
+            </div>
+
+            <!-- DETAIL PANEL (Slide Over) -->
+            <div id="detailPanel" class="fixed inset-y-0 right-0 md:relative md:inset-auto md:h-full w-full md:w-[400px] border-l border-slate-800 bg-slate-900/95 backdrop-blur-xl flex flex-col z-30 shadow-2xl shadow-black panel-hidden transition-transform duration-300 ease-in-out">
+                <!-- Header -->
+                <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950">
+                    <h3 class="font-mono text-cyan-500 font-bold">TARGET_ANALYSIS</h3>
+                    <button onclick="closeDetailPanel()" class="hover:text-cyan-400 transition-colors">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <!-- Content -->
+                <div id="detailContent" class="flex-1 overflow-y-auto p-4 space-y-6">
+                    <!-- Dynamic Content -->
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- Mock Data ---
+        const vehicles = [
+            {
+                id: 'V-8921',
+                plate: 'B 1923 UZY',
+                model: 'Toyota Fortuner - Hitam',
+                score: 32,
+                threatLevel: 'HIGH',
+                lastSeen: '2 menit yang lalu',
+                location: 'Jl. Jend. Sudirman, Jakarta Pusat',
+                reports: 12,
+                tags: ['Arogansi', 'Bahu Jalan', 'Strobo Ilegal'],
+                status: 'ACTIVE'
+            },
+            {
+                id: 'V-2210',
+                plate: 'D 4521 ABC',
+                model: 'Honda Civic - Putih',
+                score: 88,
+                threatLevel: 'LOW',
+                lastSeen: '15 menit yang lalu',
+                location: 'Tol Pasteur, Bandung',
+                reports: 0,
+                tags: ['Safe Driver'],
+                status: 'IDLE'
+            },
+            {
+                id: 'V-3391',
+                plate: 'F 2291 KL',
+                model: 'Yamaha NMAX - Merah',
+                score: 45,
+                threatLevel: 'MEDIUM',
+                lastSeen: '1 jam yang lalu',
+                location: 'Jl. Raya Bogor',
+                reports: 3,
+                tags: ['Lawan Arah', 'Trotoar'],
+                status: 'ACTIVE'
+            },
+             {
+                id: 'V-4421',
+                plate: 'B 9981 POA',
+                model: 'Mitsubishi Pajero - Hitam',
+                score: 28,
+                threatLevel: 'HIGH',
+                lastSeen: 'Baru saja',
+                location: 'Tol Dalam Kota',
+                reports: 24,
+                tags: ['Agresif', 'Plat Palsu'],
+                status: 'ACTIVE'
+            }
+        ];
+
+        // --- State ---
+        let currentSearch = '';
+
+        // --- DOM Elements ---
+        const vehicleGrid = document.getElementById('vehicleGrid');
+        const detailPanel = document.getElementById('detailPanel');
+        const detailContent = document.getElementById('detailContent');
+        const feedContainer = document.getElementById('feedContainer');
+        const searchInput = document.getElementById('searchInput');
+        const clockElement = document.getElementById('clock');
+
+        // --- Helpers ---
+        function getThreatBadgeHTML(level) {
+            const colors = {
+                HIGH: 'text-red-500 border-red-500/50 bg-red-950/30',
+                MEDIUM: 'text-amber-500 border-amber-500/50 bg-amber-950/30',
+                LOW: 'text-emerald-500 border-emerald-500/50 bg-emerald-950/30'
+            };
+            const colorClass = colors[level] || colors.LOW;
+            return `<span class="px-2 py-0.5 text-xs font-mono font-bold border ${colorClass}">${level}_THREAT</span>`;
+        }
+
+        function getScoreHTML(score) {
+            const color = score < 50 ? 'text-red-500' : 'text-emerald-500';
+            const bgClass = score < 50 ? 'bg-red-500' : 'bg-emerald-500';
+            return `
+                <div class="flex items-end gap-2">
+                    <span class="text-xl font-bold font-mono ${color}">${score}</span>
+                    <span class="text-[10px] text-slate-600 mb-1">/100</span>
+                </div>
+                <div class="w-full h-1 bg-slate-800 mt-1">
+                    <div class="h-full ${bgClass}" style="width: ${score}%"></div>
+                </div>
+            `;
+        }
+
+        // --- Render Functions ---
+        function renderVehicles() {
+            vehicleGrid.innerHTML = '';
+            
+            const filtered = vehicles.filter(v => 
+                v.plate.toLowerCase().includes(currentSearch.toLowerCase())
+            );
+
+            if (filtered.length === 0) {
+                vehicleGrid.innerHTML = '<div class="col-span-2 text-center text-slate-600 font-mono py-10">NO MATCHES FOUND IN DATABASE</div>';
+                return;
+            }
+
+            filtered.forEach(vehicle => {
+                const card = document.createElement('div');
+                // TechBorder Style
+                card.className = `relative border border-slate-800 bg-slate-950/80 backdrop-blur-sm p-4 group hover:bg-slate-900/90 transition-all cursor-pointer`;
+                card.innerHTML = `
+                    <!-- Corner Accents -->
+                    <div class="absolute top-0 left-0 w-2 h-2 border-l-2 border-t-2 border-cyan-500"></div>
+                    <div class="absolute top-0 right-0 w-2 h-2 border-r-2 border-t-2 border-cyan-500"></div>
+                    <div class="absolute bottom-0 left-0 w-2 h-2 border-l-2 border-b-2 border-cyan-500"></div>
+                    <div class="absolute bottom-0 right-0 w-2 h-2 border-r-2 border-b-2 border-cyan-500"></div>
+
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-2 h-2 rounded-full ${vehicle.status === 'ACTIVE' ? 'bg-red-500 animate-pulse' : 'bg-slate-600'}"></div>
+                            <div>
+                                <h3 class="text-2xl font-bold font-mono text-slate-100 tracking-tight">${vehicle.plate}</h3>
+                                <p class="text-xs text-slate-500 font-mono uppercase">${vehicle.model}</p>
+                            </div>
+                        </div>
+                        ${getThreatBadgeHTML(vehicle.threatLevel)}
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="bg-slate-950/50 p-2 border border-slate-800">
+                            <span class="text-[10px] text-slate-500 block mb-1">SAFETY SCORE</span>
+                            ${getScoreHTML(vehicle.score)}
+                        </div>
+                        <div class="bg-slate-950/50 p-2 border border-slate-800">
+                            <span class="text-[10px] text-slate-500 block mb-1">TOTAL REPORTS</span>
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i>
+                                <span class="text-xl font-bold font-mono text-slate-200">${vehicle.reports}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between text-xs font-mono text-slate-500 border-t border-slate-800 pt-3 mt-2">
+                        <div class="flex items-center gap-1">
+                            <i data-lucide="map-pin" class="w-3 h-3"></i>
+                            <span class="truncate max-w-[150px]">${vehicle.location}</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <i data-lucide="clock" class="w-3 h-3"></i>
+                            <span>${vehicle.lastSeen}</span>
+                        </div>
+                    </div>
+                `;
+                
+                card.onclick = () => openDetailPanel(vehicle);
+                vehicleGrid.appendChild(card);
+            });
+            
+            lucide.createIcons();
+        }
+
+        function openDetailPanel(vehicle) {
+            // Adjust layout width if needed (for Desktop)
+            if (window.innerWidth >= 1024) {
+               feedContainer.classList.remove('w-full');
+               feedContainer.classList.add('w-1/2'); 
+            }
+
+            // Show panel
+            detailPanel.classList.remove('panel-hidden');
+            detailPanel.classList.add('panel-visible');
+
+            // Render Detail Content
+            const tagsHTML = vehicle.tags.map(tag => 
+                `<span class="px-2 py-1 text-xs font-mono bg-slate-800 text-slate-300 border border-slate-700">#${tag.toUpperCase()}</span>`
+            ).join('');
+
+            const reportsHTML = [1, 2, 3].map(i => `
+                <div class="flex gap-3 text-sm p-3 bg-slate-950/50 border border-slate-800/50">
+                    <div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center shrink-0">
+                        <i data-lucide="users" class="w-4 h-4 text-slate-500"></i>
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-cyan-600 font-mono text-xs">AGENT_${1000+i}</span>
+                            <span class="text-[10px] text-slate-600">2h ago</span>
+                        </div>
+                        <p class="text-slate-400 text-xs leading-relaxed">
+                            "Kendaraan ini memotong jalur tanpa lampu sein di tol dalam kota. Sangat membahayakan."
+                        </p>
+                    </div>
+                </div>
+            `).join('');
+
+            detailContent.innerHTML = `
+                <!-- Video Feed Mockup -->
+                <div class="relative aspect-video bg-black border border-slate-700 flex items-center justify-center overflow-hidden group mb-6">
+                    <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-40 grayscale group-hover:grayscale-0 transition-all duration-500"></div>
+                    <div class="absolute top-2 left-2 text-[10px] font-mono text-red-500 animate-pulse flex items-center gap-1">
+                        <div class="w-2 h-2 rounded-full bg-red-500"></div> REC
+                    </div>
+                    <div class="absolute inset-4 border border-white/20">
+                        <div class="absolute top-0 left-0 w-4 h-4 border-l border-t border-white/50"></div>
+                        <div class="absolute top-0 right-0 w-4 h-4 border-r border-t border-white/50"></div>
+                        <div class="absolute bottom-0 left-0 w-4 h-4 border-l border-b border-white/50"></div>
+                        <div class="absolute bottom-0 right-0 w-4 h-4 border-r border-b border-white/50"></div>
+                    </div>
+                    <span class="text-xs font-mono text-slate-400 z-10 bg-black/50 px-2 py-1">NO LIVE FEED // ARCHIVE FOOTAGE</span>
+                </div>
+
+                <div class="space-y-1">
+                    <h2 class="text-3xl font-mono font-bold text-white">${vehicle.plate}</h2>
+                    <p class="text-sm text-cyan-400 font-mono uppercase border-b border-slate-800 pb-2">${vehicle.model}</p>
+                </div>
+
+                <div>
+                    <h4 class="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Behavior Tags</h4>
+                    <div class="flex flex-wrap gap-2">${tagsHTML}</div>
+                </div>
+
+                <div>
+                    <h4 class="text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider">Latest Reports</h4>
+                    <div class="space-y-3">${reportsHTML}</div>
+                </div>
+
+                <button class="w-full py-3 mt-4 bg-red-900/20 border border-red-500/50 text-red-500 hover:bg-red-900/40 hover:text-red-400 transition-colors flex items-center justify-center gap-2 font-mono uppercase text-sm tracking-wider">
+                    <i data-lucide="shield-alert" class="w-4 h-4"></i>
+                    Report Suspicious Activity
+                </button>
+            `;
+
+            lucide.createIcons();
+        }
+
+        function closeDetailPanel() {
+            detailPanel.classList.remove('panel-visible');
+            detailPanel.classList.add('panel-hidden');
+            
+            // Reset layout width
+            if (window.innerWidth >= 1024) {
+               feedContainer.classList.remove('w-1/2');
+               feedContainer.classList.add('w-full'); 
+            }
+        }
+
+        // --- Event Listeners ---
+        searchInput.addEventListener('input', (e) => {
+            currentSearch = e.target.value;
+            renderVehicles();
+        });
+
+        // --- Clock ---
+        function updateClock() {
+            const now = new Date();
+            clockElement.innerText = now.toLocaleTimeString('id-ID');
+        }
+        setInterval(updateClock, 1000);
+
+        // --- Init ---
+        renderVehicles();
+        updateClock();
+        lucide.createIcons();
+
+    </script>
+</body>
+</html>
