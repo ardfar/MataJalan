@@ -9,7 +9,15 @@ class Vehicle extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['plate_number', 'model', 'normalized_plate_number'];
+    protected $fillable = [
+        'plate_number', 
+        'normalized_plate_number',
+        'make',
+        'model',
+        'year',
+        'color',
+        'vin'
+    ];
 
     protected static function booted()
     {
@@ -26,5 +34,10 @@ class Vehicle extends Model
     public function ratings()
     {
         return $this->hasMany(Rating::class);
+    }
+
+    public function registrationFeedbacks()
+    {
+        return $this->hasMany(RegistrationFeedback::class);
     }
 }

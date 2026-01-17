@@ -146,21 +146,24 @@
             <!-- Search Component -->
             <div class="max-w-2xl mx-auto relative group z-20">
                 <div class="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-lg blur opacity-30 group-hover:opacity-60 transition duration-500"></div>
-                <div class="relative bg-slate-950 rounded-lg p-1 flex items-center">
+                <form action="{{ route('vehicle.search') }}" method="POST" class="relative bg-slate-950 rounded-lg p-1 flex items-center">
+                    @csrf
                     <div class="pl-4 pr-3">
                         <i data-lucide="search" class="w-5 h-5 text-slate-500"></i>
                     </div>
                     <input 
                         type="text" 
+                        name="plate_number"
                         id="heroSearch"
                         class="block w-full bg-transparent border-none text-slate-100 text-lg placeholder-slate-600 focus:outline-none focus:ring-0 font-mono uppercase py-3"
                         placeholder="SEARCH LICENSE PLATE..."
                         autocomplete="off"
+                        required
                     >
-                    <button class="px-6 py-2 bg-slate-800 hover:bg-cyan-600 text-white font-mono text-sm rounded transition-colors mr-1">
+                    <button type="submit" class="px-6 py-2 bg-slate-800 hover:bg-cyan-600 text-white font-mono text-sm rounded transition-colors mr-1 cursor-pointer">
                         SCAN
                     </button>
-                </div>
+                </form>
                 
                 <!-- Autocomplete Dropdown -->
                 <div id="searchResults" class="absolute top-full left-0 right-0 mt-2 bg-slate-900 border border-slate-700 rounded-lg shadow-2xl hidden max-h-60 overflow-y-auto z-50">

@@ -3,6 +3,24 @@
         {{ __('TARGET_PROFILE') }} // {{ $vehicle ? $vehicle->plate_number : $plate_number }}
     </x-slot>
 
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    
+    <style>
+        .leaflet-container {
+            background: #0f172a;
+        }
+        .leaflet-popup-content-wrapper {
+            background: #1e293b;
+            color: #f1f5f9;
+            border: 1px solid #334155;
+            border-radius: 0.5rem;
+        }
+        .leaflet-popup-tip {
+            background: #1e293b;
+        }
+    </style>
+
     <div class="py-12">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Main Profile Card -->
@@ -50,61 +68,191 @@
                             </div>
                         </div>
 
+                        <!-- Map Visualization -->
+                        <div class="mb-8 border border-slate-800 rounded overflow-hidden">
+                            <div class="bg-slate-950 px-4 py-2 border-b border-slate-800 flex items-center gap-2">
+                                <i data-lucide="map" class="w-4 h-4 text-cyan-500"></i>
+                                <span class="text-xs font-mono font-bold text-slate-400 uppercase">Incident Heatmap</span>
+                            </div>
+                            <div id="vehicleMap" class="h-64 w-full bg-slate-900"></div>
+                        </div>
+
                         <div class="border-t border-slate-800 pt-8">
                             <h2 class="text-lg font-mono font-bold text-slate-100 mb-6 flex items-center gap-2">
                                 <i data-lucide="list" class="text-slate-500"></i>
                                 INCIDENT_LOGS
                             </h2>
                             
-                            <div class="space-y-4">
-                                @foreach($vehicle->ratings as $rating)
-                                    <div class="bg-slate-950 border border-slate-800 p-5 rounded hover:border-slate-700 transition-colors group">
-                                        <div class="flex justify-between items-start mb-3">
+                            <div class="space-y-6">
+                                @foreach($ratings as $rating)
+                                    <div class="bg-slate-950 border border-slate-800 p-6 rounded hover:border-slate-700 transition-colors group relative overflow-hidden">
+                                        
+                                        @if($rating->is_honest)
+                                            <div class="absolute top-0 right-0">
+                                                <div class="bg-cyan-900/20 text-cyan-500 text-[10px] font-mono uppercase px-2 py-1 rounded-bl border-l border-b border-cyan-500/30 flex items-center gap-1">
+                                                    <i data-lucide="shield-check" class="w-3 h-3"></i>
+                                                    Verified Truthful
+                                                </div>
+                                            </div>
+                                        @endif
+
+                                        <div class="flex justify-between items-start mb-4">
                                             <div class="flex items-center gap-3">
-                                                <div class="w-8 h-8 rounded bg-slate-900 flex items-center justify-center font-mono font-bold text-slate-500 border border-slate-800">
+                                                <div class="w-10 h-10 rounded bg-slate-900 flex items-center justify-center font-mono font-bold text-slate-500 border border-slate-800">
                                                     {{ substr($rating->user->name ?? 'A', 0, 1) }}
                                                 </div>
                                                 <div>
                                                     <div class="font-mono font-bold text-slate-300 text-sm">{{ $rating->user->name ?? 'Anonymous Agent' }}</div>
-                                                    <div class="text-[10px] font-mono text-slate-600 uppercase">{{ $rating->created_at->diffForHumans() }}</div>
+                                                    <div class="text-[10px] font-mono text-slate-600 uppercase flex items-center gap-2">
+                                                        <span>{{ $rating->created_at->diffForHumans() }}</span>
+                                                        @if($rating->address)
+                                                            <span class="text-slate-700">|</span>
+                                                            <span class="flex items-center gap-1 text-slate-500">
+                                                                <i data-lucide="map-pin" class="w-3 h-3"></i>
+                                                                {{ Str::limit($rating->address, 30) }}
+                                                            </span>
+                                                        @endif
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div class="flex gap-0.5">
+                                            <div class="flex gap-0.5 mt-1">
                                                 @for($i = 1; $i <= 5; $i++)
                                                     <i data-lucide="star" class="w-3 h-3 {{ $i <= $rating->rating ? 'fill-amber-500 text-amber-500' : 'text-slate-800' }}"></i>
                                                 @endfor
                                             </div>
                                         </div>
                                         
-                                        <p class="text-slate-400 text-sm leading-relaxed mb-4 font-mono pl-11 border-l border-slate-800 ml-4">
-                                            "{{ $rating->comment }}"
-                                        </p>
-                                        
-                                        @if($rating->tags)
-                                            <div class="flex flex-wrap gap-2 pl-11 ml-4">
-                                                @foreach($rating->tags as $tag)
-                                                    <span class="px-2 py-0.5 bg-cyan-900/10 border border-cyan-500/20 text-cyan-400 text-[10px] font-mono uppercase rounded">{{ $tag }}</span>
-                                                @endforeach
-                                            </div>
-                                        @endif
+                                        <div class="pl-13 ml-13 md:pl-13">
+                                            <p class="text-slate-400 text-sm leading-relaxed mb-4 font-mono pl-4 border-l-2 border-slate-800">
+                                                "{{ $rating->comment }}"
+                                            </p>
+
+                                            <!-- Media Gallery -->
+                                            @if($rating->media->count() > 0)
+                                                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+                                                    @foreach($rating->media as $media)
+                                                        <div class="relative group/media aspect-video bg-slate-900 rounded border border-slate-800 overflow-hidden cursor-pointer">
+                                                            @if($media->file_type === 'image')
+                                                                <img src="{{ Storage::url($media->file_path) }}" class="w-full h-full object-cover transition-transform group-hover/media:scale-105">
+                                                            @else
+                                                                <video src="{{ Storage::url($media->file_path) }}" class="w-full h-full object-cover"></video>
+                                                                <div class="absolute inset-0 flex items-center justify-center bg-black/50">
+                                                                    <i data-lucide="play-circle" class="w-8 h-8 text-white/80"></i>
+                                                                </div>
+                                                            @endif
+                                                            
+                                                            @if($media->caption)
+                                                                <div class="absolute bottom-0 left-0 right-0 bg-black/70 p-1 text-[10px] text-slate-300 font-mono truncate opacity-0 group-hover/media:opacity-100 transition-opacity">
+                                                                    {{ $media->caption }}
+                                                                </div>
+                                                            @endif
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                            
+                                            @if($rating->tags)
+                                                <div class="flex flex-wrap gap-2">
+                                                    @foreach($rating->tags as $tag)
+                                                        <span class="px-2 py-0.5 bg-cyan-900/10 border border-cyan-500/20 text-cyan-400 text-[10px] font-mono uppercase rounded hover:bg-cyan-900/30 transition-colors cursor-default">{{ $tag }}</span>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                        </div>
                                     </div>
                                 @endforeach
+                            </div>
+
+                            <div class="mt-6">
+                                {{ $ratings->links('vendor.pagination.cyberpunk') }}
                             </div>
                         </div>
                     @else
                         <div class="text-center py-16 border-2 border-dashed border-slate-800 rounded-lg bg-slate-900/50">
-                            <div class="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <i data-lucide="database" class="w-8 h-8 text-slate-500"></i>
+                            <div class="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6 relative">
+                                <div class="absolute inset-0 bg-red-500/10 rounded-full animate-pulse"></div>
+                                <i data-lucide="search-x" class="w-10 h-10 text-slate-500"></i>
                             </div>
-                            <p class="text-lg font-mono text-slate-300 mb-2">NO DATA FOUND</p>
-                            <p class="text-sm text-slate-500 font-mono mb-6 max-w-sm mx-auto">This vehicle has no recorded incidents in the surveillance grid. Be the first to file a report.</p>
-                            <a href="{{ route('vehicle.rate', $plate_number) }}" class="text-cyan-400 hover:text-cyan-300 font-mono text-sm uppercase underline decoration-cyan-500/30 hover:decoration-cyan-500 transition-all">
-                                Initialize New Report >>
-                            </a>
+                            
+                            <h3 class="text-xl font-mono font-bold text-slate-200 mb-2">TARGET_NOT_FOUND</h3>
+                            <p class="text-sm text-slate-500 font-mono mb-8 max-w-md mx-auto">
+                                The requested vehicle identifier <span class="text-cyan-400 font-bold">{{ $plate_number }}</span> does not exist in our central database.
+                            </p>
+
+                            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                                <a href="{{ route('vehicle.create', $plate_number) }}" class="inline-flex items-center justify-center px-8 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-mono font-bold text-sm uppercase tracking-wider transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)] hover:shadow-[0_0_25px_rgba(6,182,212,0.5)]">
+                                    <i data-lucide="plus-circle" class="w-4 h-4 mr-2"></i>
+                                    REGISTER_NEW_TARGET
+                                </a>
+                                
+                                <span class="text-slate-600 font-mono text-xs uppercase">OR</span>
+                                
+                                <a href="{{ route('home') }}" class="text-slate-500 hover:text-slate-300 font-mono text-sm uppercase underline decoration-slate-700 hover:decoration-slate-500 transition-all">
+                                    RETURN_TO_SEARCH
+                                </a>
+                            </div>
+
+                            <div class="mt-8 p-4 bg-slate-950/50 border border-slate-800/50 rounded inline-block text-left">
+                                <p class="text-[10px] text-slate-500 font-mono uppercase mb-2">REQUIRED_DATA_POINTS:</p>
+                                <ul class="text-[10px] text-slate-400 font-mono space-y-1">
+                                    <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3 text-emerald-500"></i> Manufacturer & Model</li>
+                                    <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3 text-emerald-500"></i> Production Year</li>
+                                    <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3 text-emerald-500"></i> Visual Identifier (Color)</li>
+                                    <li class="flex items-center gap-2"><i data-lucide="check" class="w-3 h-3 text-emerald-500"></i> VIN (Vehicle ID Number)</li>
+                                </ul>
+                            </div>
                         </div>
                     @endif
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const vehicle = @json($vehicle);
+            const ratings = @json($vehicle ? $vehicle->ratings : []);
+            
+            // Only init map if there are ratings with location
+            const locations = ratings.filter(r => r.latitude && r.longitude);
+            
+            if (locations.length > 0) {
+                const map = L.map('vehicleMap');
+                
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                    attribution: '&copy; OpenStreetMap &copy; CARTO',
+                    subdomains: 'abcd',
+                    maxZoom: 20
+                }).addTo(map);
+
+                const bounds = L.latLngBounds();
+                
+                locations.forEach(loc => {
+                    const lat = parseFloat(loc.latitude);
+                    const lng = parseFloat(loc.longitude);
+                    bounds.extend([lat, lng]);
+                    
+                    L.marker([lat, lng])
+                        .addTo(map)
+                        .bindPopup(`
+                            <div class="font-mono text-xs">
+                                <strong>${loc.created_at}</strong><br>
+                                ${loc.address || 'Unknown Location'}
+                            </div>
+                        `, { className: 'custom-map-popup' });
+                });
+                
+                map.fitBounds(bounds, { padding: [50, 50] });
+            } else {
+                // Default view if no location data
+                const map = L.map('vehicleMap').setView([-6.2088, 106.8456], 11);
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                    attribution: '&copy; OpenStreetMap &copy; CARTO',
+                    subdomains: 'abcd'
+                }).addTo(map);
+            }
+        });
+    </script>
 </x-app-layout>

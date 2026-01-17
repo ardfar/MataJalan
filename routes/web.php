@@ -18,6 +18,12 @@ Route::middleware(['auth'])->group(function () {
     // Rating might require login
     Route::get('/vehicle/{plate_number}/rate', [WebController::class, 'rate'])->name('vehicle.rate');
     Route::post('/vehicle/{plate_number}/rate', [WebController::class, 'storeRating'])->name('vehicle.storeRating');
+
+    // Vehicle Registration
+    Route::get('/vehicle/{plate_number}/create', [WebController::class, 'create'])->name('vehicle.create');
+    Route::post('/vehicle/{plate_number}/store', [WebController::class, 'store'])->name('vehicle.store');
+    Route::get('/vehicle/{vehicle}/registered', [WebController::class, 'registered'])->name('vehicle.registered');
+    Route::post('/vehicle/{vehicle}/feedback', [WebController::class, 'storeFeedback'])->name('vehicle.storeFeedback');
 });
 
 Route::get('/dashboard', function () {

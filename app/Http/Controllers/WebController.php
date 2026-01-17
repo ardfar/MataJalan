@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Rating;
+use App\Models\RatingMedia;
 use App\Models\Vehicle;
 use App\Models\User;
+use App\Models\RegistrationFeedback;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class WebController extends Controller
 {
@@ -29,7 +32,7 @@ class WebController extends Controller
             if ($vehicle->ratings_count > 0) {
                 if ($avgRating < 2.5) $threatLevel = 'HIGH';
                 elseif ($avgRating < 4.0) $threatLevel = 'MEDIUM';
-            }
+                }
 
             // Mock Data
             $location = $vehicle->location ?? ['Jl. Jend. Sudirman', 'Tol Dalam Kota', 'Simpang Lima'][rand(0,2)];
@@ -104,9 +107,6 @@ class WebController extends Controller
     {
         // 1. Try exact match first
         $vehicle = Vehicle::where('plate_number', $plate_number)
-            ->with(['ratings.user' => function($query) {
-                $query->select('id', 'name');
-            }])
             ->withAvg('ratings', 'rating')
             ->withCount('ratings')
             ->first();
@@ -115,31 +115,47 @@ class WebController extends Controller
         if (!$vehicle) {
             $normalizedInput = Vehicle::normalizePlate($plate_number);
             $vehicle = Vehicle::where('normalized_plate_number', $normalizedInput)
-                ->with(['ratings.user' => function($query) {
-                    $query->select('id', 'name');
-                }])
                 ->withAvg('ratings', 'rating')
                 ->withCount('ratings')
                 ->first();
-                
-            // Optional: If found via fuzzy match but URL is different, we could redirect to canonical URL.
-            // But for now, showing the result is enough and less confusing than multiple redirects if not handled carefully.
         }
 
-        return view('vehicle.show', compact('vehicle', 'plate_number'));
+        $ratings = null;
+        if ($vehicle) {
+            $ratings = $vehicle->ratings()
+                ->with(['user' => function($query) {
+                    $query->select('id', 'name');
+                }, 'media'])
+                ->latest()
+                ->paginate(5);
+        }
+
+        return view('vehicle.show', compact('vehicle', 'plate_number', 'ratings'));
     }
 
     public function rate($plate_number)
     {
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('error', 'You must be logged in to submit a report.');
+        }
         return view('vehicle.rate', compact('plate_number'));
     }
 
     public function storeRating(Request $request, $plate_number)
     {
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('error', 'You must be logged in to submit a report.');
+        }
+
         $request->validate([
             'rating' => 'required|integer|min:1|max:5',
             'comment' => 'nullable|string',
-            'tags' => 'nullable|string' // comma separated in form
+            'tags' => 'required|string', // Changed to required as per requirement "Minimum 1 tag"
+            'honesty_declaration' => 'accepted',
+            'media.*' => 'nullable|file|mimes:jpg,jpeg,png,mp4|max:10240', // 10MB
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+            'address' => 'nullable|string',
         ]);
 
         $vehicle = Vehicle::firstOrCreate(
@@ -147,25 +163,91 @@ class WebController extends Controller
         );
 
         // Handle tags: "safe, fast" -> ["safe", "fast"]
-        $tags = $request->tags ? array_map('trim', explode(',', $request->tags)) : null;
+        $tags = $request->tags ? array_filter(array_map('trim', explode(',', $request->tags))) : [];
 
-        // Auto-login or create user if not exists (demo mode)
-        // In real app, middleware would handle this. 
-        // For this demo, let's use ID 1 or current user.
-        $userId = Auth::id() ?? 1;
-         if ($userId === 1 && !User::find(1)) {
-            User::factory()->create(['id' => 1, 'name' => 'Anonymous Driver', 'email' => 'anon@ivip.test']);
-        }
-
-        Rating::create([
-            'user_id' => $userId,
+        $rating = Rating::create([
+            'user_id' => Auth::id(),
             'vehicle_id' => $vehicle->id,
             'rating' => $request->rating,
             'comment' => $request->comment,
             'tags' => $tags,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
+            'address' => $request->address,
+            'is_honest' => true,
         ]);
+
+        if ($request->hasFile('media')) {
+            foreach ($request->file('media') as $index => $file) {
+                $path = $file->store('rating-media', 'public');
+                $type = str_starts_with($file->getMimeType(), 'video') ? 'video' : 'image';
+                
+                // Get caption for this specific file if available
+                // Assuming media_captions is an array keyed by the same index or just an array
+                // For simplicity in form, we might map them by index. 
+                // Let's assume input names are media[] and media_captions[]
+                $caption = $request->input('media_captions')[$index] ?? null;
+
+                RatingMedia::create([
+                    'rating_id' => $rating->id,
+                    'file_path' => $path,
+                    'file_type' => $type,
+                    'caption' => $caption,
+                ]);
+            }
+        }
 
         return redirect()->route('vehicle.show', ['plate_number' => $plate_number])
             ->with('success', 'Rating submitted successfully!');
+    }
+
+    public function create($plate_number)
+    {
+        return view('vehicle.create', compact('plate_number'));
+    }
+
+    public function store(Request $request, $plate_number)
+    {
+        $request->validate([
+            'make' => 'required|string',
+            'model' => 'required|string',
+            'year' => 'required|integer|min:1900|max:'.(date('Y')+1),
+            'color' => 'required|string',
+            'vin' => 'required|string|unique:vehicles,vin',
+        ]);
+
+        $vehicle = Vehicle::create([
+            'plate_number' => $plate_number,
+            'make' => $request->make,
+            'model' => $request->model,
+            'year' => $request->year,
+            'color' => $request->color,
+            'vin' => $request->vin,
+        ]);
+
+        return redirect()->route('vehicle.registered', ['vehicle' => $vehicle->id]);
+    }
+
+    public function registered(Vehicle $vehicle)
+    {
+        return view('vehicle.registered', compact('vehicle'));
+    }
+
+    public function storeFeedback(Request $request, Vehicle $vehicle)
+    {
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string',
+        ]);
+
+        RegistrationFeedback::create([
+            'vehicle_id' => $vehicle->id,
+            'user_id' => Auth::id() ?? 1, // Fallback for demo
+            'rating' => $request->rating,
+            'comment' => $request->comment,
+        ]);
+
+        return redirect()->route('vehicle.show', ['plate_number' => $vehicle->plate_number])
+            ->with('success', 'Vehicle registered and feedback submitted!');
     }
 }
