@@ -1,0 +1,90 @@
+# API Documentation
+
+## Overview
+The MATAJALAN_OS API allows external systems and mobile applications to interact with the vehicle surveillance database.
+
+**Base URL:** `/api`
+**Authentication:** Bearer Token (Sanctum)
+
+## Endpoints
+
+### 1. User Profile
+Get the currently authenticated user.
+
+- **URL:** `/user`
+- **Method:** `GET`
+- **Auth Required:** Yes
+- **Response:**
+  ```json
+  {
+      "id": 1,
+      "name": "Agent 007",
+      "email": "agent@matajalan.os",
+      "is_admin": 0,
+      "kyc_status": "approved",
+      ...
+  }
+  ```
+
+### 2. List Vehicles
+Retrieve a list of all tracked vehicles.
+
+- **URL:** `/vehicles`
+- **Method:** `GET`
+- **Response:**
+  ```json
+  [
+      {
+          "id": 1,
+          "plate_number": "B1234XYZ",
+          "model": "Toyota Camry",
+          "created_at": "..."
+      },
+      ...
+  ]
+  ```
+
+### 3. Get Vehicle Details
+Retrieve detailed information about a specific vehicle.
+
+- **URL:** `/vehicles/{plate_number}`
+- **Method:** `GET`
+- **Parameters:**
+    - `plate_number` (string): The vehicle license plate.
+- **Response:**
+  ```json
+  {
+      "id": 1,
+      "plate_number": "B1234XYZ",
+      "model": "Toyota Camry",
+      "ratings": [ ... ]
+  }
+  ```
+
+### 4. Submit Rating
+Submit a new rating/report for a vehicle.
+
+- **URL:** `/ratings`
+- **Method:** `POST`
+- **Auth Required:** Yes
+- **Body:**
+  ```json
+  {
+      "plate_number": "B1234XYZ",
+      "rating": 1,
+      "comment": "Reckless driving on highway.",
+      "tags": ["speeding", "aggressive"]
+  }
+  ```
+- **Response:**
+  - `201 Created`: Rating submitted successfully.
+  - `422 Unprocessable Entity`: Validation error.
+
+## Error Handling
+The API returns standard HTTP status codes:
+- `200`: Success
+- `401`: Unauthorized
+- `403`: Forbidden
+- `404`: Not Found
+- `422`: Validation Error
+- `500`: Server Error
