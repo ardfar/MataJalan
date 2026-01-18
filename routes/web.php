@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\AdminKycController;
+use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\KycController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WebController;
@@ -47,6 +49,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // Admin Routes (Requires Auth, Email Verification & Admin Status)
 Route::middleware(['auth', 'verified', EnsureIsAdmin::class])->prefix('admin')->name('admin.')->group(function () {
+    // Dashboard
+    Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+    // Users Management
+    Route::resource('users', AdminUserController::class);
+
+    // KYC Management
     Route::get('/kyc', [AdminKycController::class, 'index'])->name('kyc.index');
     Route::get('/kyc/{user}', [AdminKycController::class, 'show'])->name('kyc.show');
     Route::get('/kyc/{user}/download', [AdminKycController::class, 'download'])->name('kyc.download');

@@ -13,6 +13,12 @@ class User extends Authenticatable implements MustVerifyEmail
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
 
+    const ROLE_SUPERADMIN = 'superadmin';
+    const ROLE_ADMIN = 'admin';
+    const ROLE_USER = 'user';
+    const ROLE_TIER_1 = 'tier_1'; // KYC Verified
+    const ROLE_TIER_2 = 'tier_2'; // Basic
+
     /**
      * The attributes that are mass assignable.
      *
@@ -22,7 +28,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'name',
         'email',
         'password',
-        'is_admin',
+        'role',
         'kyc_status',
         'kyc_data',
         'kyc_submitted_at',
@@ -49,11 +55,25 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'is_admin' => 'boolean',
             'kyc_data' => 'array',
             'kyc_submitted_at' => 'datetime',
             'kyc_verified_at' => 'datetime',
         ];
+    }
+
+    public function hasRole($role)
+    {
+        return $this->role === $role;
+    }
+
+    public function isSuperAdmin()
+    {
+        return $this->role === self::ROLE_SUPERADMIN;
+    }
+
+    public function isAdmin()
+    {
+        return $this->role === self::ROLE_ADMIN || $this->role === self::ROLE_SUPERADMIN;
     }
 
     public function ratings()
