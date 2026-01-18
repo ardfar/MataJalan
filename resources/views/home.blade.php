@@ -200,7 +200,7 @@
                             <span class="text-slate-600">{{ $vehicle->score }} SCORE</span>
                         </div>
                         
-                        <a href="{{ route('vehicle.show', $vehicle->plate) }}" class="absolute inset-0 z-10"></a>
+                        <a href="{{ route('vehicle.show', $vehicle->uuid) }}" class="absolute inset-0 z-10"></a>
                     </div>
                 @empty
                     <div class="col-span-full text-center py-8 text-slate-600 font-mono border border-slate-800 border-dashed rounded">
@@ -333,7 +333,7 @@
 
             if (matches.length > 0) {
                 resultsBox.innerHTML = matches.map(v => `
-                    <a href="/vehicle/${v.plate}" class="block p-3 hover:bg-slate-800 border-b border-slate-800 last:border-0 transition-colors">
+                    <a href="/vehicle/${v.uuid}" class="block p-3 hover:bg-slate-800 border-b border-slate-800 last:border-0 transition-colors">
                         <div class="flex justify-between items-center">
                             <span class="font-mono font-bold text-slate-200">${v.plate}</span>
                             <span class="text-[10px] px-1.5 py-0.5 rounded ${v.threatLevel === 'HIGH' ? 'bg-red-900/30 text-red-400' : 'bg-emerald-900/30 text-emerald-400'}">${v.threatLevel}</span>

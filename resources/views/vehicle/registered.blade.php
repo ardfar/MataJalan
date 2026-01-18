@@ -44,7 +44,7 @@
 
                 <!-- Action Button -->
                 <div class="border-t border-slate-800 pt-8">
-                    <a href="{{ route('vehicle.show', $vehicle->plate_number) }}" class="inline-flex items-center justify-center px-8 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-mono font-bold text-sm uppercase tracking-wider transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)] hover:shadow-[0_0_25px_rgba(6,182,212,0.5)]">
+                    <a href="{{ route('vehicle.show', $vehicle->uuid) }}" class="inline-flex items-center justify-center px-8 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-mono font-bold text-sm uppercase tracking-wider transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)] hover:shadow-[0_0_25px_rgba(6,182,212,0.5)]">
                         <i data-lucide="eye" class="w-4 h-4 mr-2"></i>
                         VIEW_NEWLY_ADDED_VEHICLE
                     </a>

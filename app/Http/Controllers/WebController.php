@@ -10,6 +10,7 @@ use App\Models\RegistrationFeedback;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class WebController extends Controller
 {
@@ -40,6 +41,7 @@ class WebController extends Controller
 
             return (object) [
                 'id' => $vehicle->id,
+                'uuid' => $vehicle->uuid,
                 'plate' => $vehicle->plate_number,
                 'model' => $vehicle->model ?? 'Unknown Model',
                 'score' => $score,
@@ -95,29 +97,47 @@ class WebController extends Controller
         $vehicle = Vehicle::where('normalized_plate_number', $normalizedInput)->first();
         
         if ($vehicle) {
-            // If found, redirect to the canonical URL with original formatting
-            return redirect()->route('vehicle.show', ['plate_number' => $vehicle->plate_number]);
+            // If found, redirect to the canonical URL with UUID
+            return redirect()->route('vehicle.show', ['identifier' => $vehicle->uuid]);
         }
         
         // If not found, redirect to standardized/normalized version
-        return redirect()->route('vehicle.show', ['plate_number' => $normalizedInput]);
+        return redirect()->route('vehicle.show', ['identifier' => $normalizedInput]);
     }
 
-    public function show($plate_number)
+    public function show($identifier)
     {
-        // 1. Try exact match first
-        $vehicle = Vehicle::where('plate_number', $plate_number)
-            ->withAvg('ratings', 'rating')
-            ->withCount('ratings')
-            ->first();
+        $plate_number = $identifier;
+        $vehicle = null;
 
-        // 2. If not found, try fuzzy match using normalized column
-        if (!$vehicle) {
-            $normalizedInput = Vehicle::normalizePlate($plate_number);
-            $vehicle = Vehicle::where('normalized_plate_number', $normalizedInput)
+        if (Str::isUuid($identifier)) {
+            // Use UUID to find
+            $vehicle = Vehicle::where('uuid', $identifier)
+                ->withAvg('ratings', 'rating')
+                ->withCount('ratings')
+                ->firstOrFail();
+            $plate_number = $vehicle->plate_number;
+        } else {
+            // Backward compatibility: Try exact match first
+            $vehicle = Vehicle::where('plate_number', $identifier)
                 ->withAvg('ratings', 'rating')
                 ->withCount('ratings')
                 ->first();
+
+            // If not found, try fuzzy match using normalized column
+            if (!$vehicle) {
+                $normalizedInput = Vehicle::normalizePlate($identifier);
+                $vehicle = Vehicle::where('normalized_plate_number', $normalizedInput)
+                    ->withAvg('ratings', 'rating')
+                    ->withCount('ratings')
+                    ->first();
+                $plate_number = $normalizedInput ?: $identifier;
+            }
+
+            // If vehicle found by plate, redirect to canonical UUID URL
+            if ($vehicle) {
+                return redirect()->route('vehicle.show', ['identifier' => $vehicle->uuid]);
+            }
         }
 
         $ratings = null;
@@ -133,15 +153,27 @@ class WebController extends Controller
         return view('vehicle.show', compact('vehicle', 'plate_number', 'ratings'));
     }
 
-    public function rate($plate_number)
+    public function rate($identifier)
     {
         if (!Auth::check()) {
             return redirect()->route('login')->with('error', 'You must be logged in to submit a report.');
         }
+
+        if (Str::isUuid($identifier)) {
+             $vehicle = Vehicle::where('uuid', $identifier)->firstOrFail();
+             $plate_number = $vehicle->plate_number;
+        } else {
+             $vehicle = Vehicle::where('plate_number', $identifier)->orWhere('normalized_plate_number', Vehicle::normalizePlate($identifier))->first();
+             if ($vehicle) {
+                 return redirect()->route('vehicle.rate', ['identifier' => $vehicle->uuid]);
+             }
+             $plate_number = $identifier;
+        }
+
         return view('vehicle.rate', compact('plate_number'));
     }
 
-    public function storeRating(Request $request, $plate_number)
+    public function storeRating(Request $request, $identifier)
     {
         if (!Auth::check()) {
             return redirect()->route('login')->with('error', 'You must be logged in to submit a report.');
@@ -158,9 +190,19 @@ class WebController extends Controller
             'address' => 'nullable|string',
         ]);
 
-        $vehicle = Vehicle::firstOrCreate(
-            ['plate_number' => $plate_number]
-        );
+        $vehicle = null;
+        $plate_number = $identifier;
+
+        if (Str::isUuid($identifier)) {
+            $vehicle = Vehicle::where('uuid', $identifier)->firstOrFail();
+            $plate_number = $vehicle->plate_number;
+        } else {
+            // Find or create based on plate number
+            $vehicle = Vehicle::firstOrCreate(
+                ['plate_number' => $identifier]
+            );
+            // Since firstOrCreate might create a new one, we let it handle UUID generation via model boot/trait
+        }
 
         // Handle tags: "safe, fast" -> ["safe", "fast"]
         $tags = $request->tags ? array_filter(array_map('trim', explode(',', $request->tags))) : [];
@@ -183,9 +225,6 @@ class WebController extends Controller
                 $type = str_starts_with($file->getMimeType(), 'video') ? 'video' : 'image';
                 
                 // Get caption for this specific file if available
-                // Assuming media_captions is an array keyed by the same index or just an array
-                // For simplicity in form, we might map them by index. 
-                // Let's assume input names are media[] and media_captions[]
                 $caption = $request->input('media_captions')[$index] ?? null;
 
                 RatingMedia::create([
@@ -197,16 +236,32 @@ class WebController extends Controller
             }
         }
 
-        return redirect()->route('vehicle.show', ['plate_number' => $plate_number])
+        return redirect()->route('vehicle.show', ['identifier' => $vehicle->uuid])
             ->with('success', 'Rating submitted successfully!');
     }
 
-    public function create($plate_number)
+    public function create($identifier)
     {
+        $plate_number = $identifier;
+        if (Str::isUuid($identifier)) {
+             $vehicle = Vehicle::where('uuid', $identifier)->first();
+             if ($vehicle) {
+                 return redirect()->route('vehicle.show', ['identifier' => $vehicle->uuid]);
+             }
+             // If UUID not found, invalid request really, but maybe allow create? 
+             // Hard to create a vehicle from just a UUID. Assume identifier is plate.
+        } else {
+             // Check if vehicle exists by plate
+             $vehicle = Vehicle::where('plate_number', $identifier)->orWhere('normalized_plate_number', Vehicle::normalizePlate($identifier))->first();
+             if ($vehicle) {
+                 return redirect()->route('vehicle.show', ['identifier' => $vehicle->uuid]);
+             }
+        }
+
         return view('vehicle.create', compact('plate_number'));
     }
 
-    public function store(Request $request, $plate_number)
+    public function store(Request $request, $identifier)
     {
         $request->validate([
             'make' => 'required|string',
@@ -216,8 +271,9 @@ class WebController extends Controller
             'vin' => 'required|string|unique:vehicles,vin',
         ]);
 
+        // $identifier is plate_number
         $vehicle = Vehicle::create([
-            'plate_number' => $plate_number,
+            'plate_number' => $identifier,
             'make' => $request->make,
             'model' => $request->model,
             'year' => $request->year,
@@ -225,7 +281,7 @@ class WebController extends Controller
             'vin' => $request->vin,
         ]);
 
-        return redirect()->route('vehicle.registered', ['vehicle' => $vehicle->id]);
+        return redirect()->route('vehicle.registered', ['vehicle' => $vehicle->uuid]);
     }
 
     public function registered(Vehicle $vehicle)
@@ -247,7 +303,7 @@ class WebController extends Controller
             'comment' => $request->comment,
         ]);
 
-        return redirect()->route('vehicle.show', ['plate_number' => $vehicle->plate_number])
+        return redirect()->route('vehicle.show', ['identifier' => $vehicle->uuid])
             ->with('success', 'Vehicle registered and feedback submitted!');
     }
 }

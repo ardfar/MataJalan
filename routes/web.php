@@ -11,17 +11,19 @@ use Illuminate\Support\Facades\Route;
 // Public Routes
 Route::get('/', [WebController::class, 'index'])->name('home');
 Route::post('/search', [WebController::class, 'search'])->name('vehicle.search');
-Route::get('/vehicle/{plate_number}', [WebController::class, 'show'])->name('vehicle.show');
+Route::get('/vehicle/{identifier}', [WebController::class, 'show'])->name('vehicle.show');
 
 // Protected Routes (Login required)
 Route::middleware(['auth'])->group(function () {
     // Rating might require login
-    Route::get('/vehicle/{plate_number}/rate', [WebController::class, 'rate'])->name('vehicle.rate');
-    Route::post('/vehicle/{plate_number}/rate', [WebController::class, 'storeRating'])->name('vehicle.storeRating');
+    Route::get('/vehicle/{identifier}/rate', [WebController::class, 'rate'])->name('vehicle.rate');
+    Route::post('/vehicle/{identifier}/rate', [WebController::class, 'storeRating'])->name('vehicle.storeRating');
 
     // Vehicle Registration
-    Route::get('/vehicle/{plate_number}/create', [WebController::class, 'create'])->name('vehicle.create');
-    Route::post('/vehicle/{plate_number}/store', [WebController::class, 'store'])->name('vehicle.store');
+    Route::get('/vehicle/{identifier}/create', [WebController::class, 'create'])->name('vehicle.create');
+    Route::post('/vehicle/{identifier}/store', [WebController::class, 'store'])->name('vehicle.store');
+    
+    // These use model binding which we updated to use UUID
     Route::get('/vehicle/{vehicle}/registered', [WebController::class, 'registered'])->name('vehicle.registered');
     Route::post('/vehicle/{vehicle}/feedback', [WebController::class, 'storeFeedback'])->name('vehicle.storeFeedback');
 });

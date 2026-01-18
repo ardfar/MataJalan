@@ -36,6 +36,7 @@ Retrieve a list of all tracked vehicles.
   [
       {
           "id": 1,
+          "uuid": "550e8400-e29b-41d4-a716-446655440000",
           "plate_number": "B1234XYZ",
           "model": "Toyota Camry",
           "created_at": "..."
@@ -47,14 +48,15 @@ Retrieve a list of all tracked vehicles.
 ### 3. Get Vehicle Details
 Retrieve detailed information about a specific vehicle.
 
-- **URL:** `/vehicles/{plate_number}`
+- **URL:** `/vehicles/{identifier}`
 - **Method:** `GET`
 - **Parameters:**
-    - `plate_number` (string): The vehicle license plate.
+    - `identifier` (string): The vehicle UUID (preferred) or license plate (backward compatible).
 - **Response:**
   ```json
   {
       "id": 1,
+      "uuid": "550e8400-e29b-41d4-a716-446655440000",
       "plate_number": "B1234XYZ",
       "model": "Toyota Camry",
       "ratings": [ ... ]

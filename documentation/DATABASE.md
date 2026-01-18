@@ -20,6 +20,7 @@ erDiagram
     }
     Vehicle {
         bigint id PK
+        uuid uuid UK
         string plate_number
         string model
         timestamp created_at
@@ -59,6 +60,7 @@ Stores information about vehicles tracked by the system.
 | Column | Type | Description |
 | :--- | :--- | :--- |
 | `id` | BIGINT | Primary Key |
+| `uuid` | UUID | Unique Universal Identifier (Indexed) |
 | `plate_number` | STRING | Unique license plate (e.g., "B1234XYZ") |
 | `model` | STRING | Vehicle model/make (optional) |
 | `created_at` | TIMESTAMP | Record creation time |

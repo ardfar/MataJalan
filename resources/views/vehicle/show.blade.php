@@ -81,7 +81,7 @@
                             <p class="text-xs font-mono text-slate-500 uppercase">Vehicle Identification Number // Verified in Database</p>
                         </div>
                         
-                        <a href="{{ route('vehicle.rate', $plate_number) }}" class="inline-flex items-center justify-center px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-mono font-bold text-sm uppercase tracking-wider transition-all clip-path-polygon hover:shadow-[0_0_15px_rgba(6,182,212,0.5)]">
+                        <a href="{{ route('vehicle.rate', $vehicle ? $vehicle->uuid : $plate_number) }}" class="inline-flex items-center justify-center px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-mono font-bold text-sm uppercase tracking-wider transition-all clip-path-polygon hover:shadow-[0_0_15px_rgba(6,182,212,0.5)]">
                             <i data-lucide="file-plus" class="w-4 h-4 mr-2"></i>
                             SUBMIT_REPORT
                         </a>
