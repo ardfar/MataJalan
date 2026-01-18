@@ -21,7 +21,46 @@
         }
     </style>
 
-    <div class="py-12">
+    <div class="py-12" x-data="{
+        isOpen: false,
+        activeMedia: null,
+        mediaList: [],
+        currentIndex: 0,
+        
+        openViewer(items, index) {
+            this.mediaList = items;
+            this.currentIndex = index;
+            this.activeMedia = this.mediaList[this.currentIndex];
+            this.isOpen = true;
+            document.body.style.overflow = 'hidden';
+        },
+        
+        closeViewer() {
+            this.isOpen = false;
+            this.activeMedia = null;
+            document.body.style.overflow = '';
+        },
+        
+        next() {
+            if (this.mediaList.length <= 1) return;
+            if (this.currentIndex < this.mediaList.length - 1) {
+                this.currentIndex++;
+            } else {
+                this.currentIndex = 0;
+            }
+            this.activeMedia = this.mediaList[this.currentIndex];
+        },
+        
+        prev() {
+            if (this.mediaList.length <= 1) return;
+            if (this.currentIndex > 0) {
+                this.currentIndex--;
+            } else {
+                this.currentIndex = this.mediaList.length - 1;
+            }
+            this.activeMedia = this.mediaList[this.currentIndex];
+        }
+    }" @keydown.escape.window="closeViewer()" @keydown.right.window="next()" @keydown.left.window="prev()">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Main Profile Card -->
             <div class="bg-slate-900 border border-slate-800 rounded-lg shadow-2xl overflow-hidden mb-6 relative">
@@ -129,9 +168,18 @@
 
                                             <!-- Media Gallery -->
                                             @if($rating->media->count() > 0)
-                                                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
-                                                    @foreach($rating->media as $media)
-                                                        <div class="relative group/media aspect-video bg-slate-900 rounded border border-slate-800 overflow-hidden cursor-pointer">
+                                                @php
+                                                    $galleryJson = $rating->media->map(function($m) {
+                                                        return [
+                                                            'type' => $m->file_type,
+                                                            'url' => Storage::url($m->file_path),
+                                                            'caption' => $m->caption
+                                                        ];
+                                                    })->toJson();
+                                                @endphp
+                                                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4" x-data="{ gallery: {{ $galleryJson }} }">
+                                                    @foreach($rating->media as $index => $media)
+                                                        <div @click="openViewer(gallery, {{ $index }})" class="relative group/media aspect-video bg-slate-900 rounded border border-slate-800 overflow-hidden cursor-pointer transition-all hover:border-cyan-500/50">
                                                             @if($media->file_type === 'image')
                                                                 <img src="{{ Storage::url($media->file_path) }}" class="w-full h-full object-cover transition-transform group-hover/media:scale-105">
                                                             @else
@@ -146,6 +194,11 @@
                                                                     {{ $media->caption }}
                                                                 </div>
                                                             @endif
+                                                            
+                                                            <!-- Hover overlay to indicate clickable -->
+                                                            <div class="absolute inset-0 bg-cyan-500/10 opacity-0 group-hover/media:opacity-100 transition-opacity flex items-center justify-center">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white/80 drop-shadow-lg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M14 10l6.1-6.1"/><path d="M9 21H3v-6"/><path d="M10 14l-6.1 6.1"/></svg>
+                                                            </div>
                                                         </div>
                                                     @endforeach
                                                 </div>
@@ -206,6 +259,54 @@
                 </div>
             </div>
         </div>
+
+        <!-- Full Screen Media Viewer Modal -->
+        <div x-show="isOpen" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-center justify-center p-4"
+             style="display: none;">
+            
+            <!-- Close Button -->
+            <button @click="closeViewer()" class="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-900/50 hover:bg-slate-800 p-2 rounded-full transition-colors z-[101]">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+
+            <!-- Navigation Buttons -->
+            <button x-show="mediaList.length > 1" @click.stop="prev()" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white bg-slate-900/50 hover:bg-slate-800 p-3 rounded-full transition-colors z-[101]">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+
+            <button x-show="mediaList.length > 1" @click.stop="next()" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white bg-slate-900/50 hover:bg-slate-800 p-3 rounded-full transition-colors z-[101]">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+
+            <!-- Main Content -->
+            <div class="relative max-w-7xl max-h-full w-full flex flex-col items-center justify-center" @click.outside="closeViewer()">
+                <template x-if="activeMedia && activeMedia.type === 'image'">
+                    <img :src="activeMedia.url" class="max-h-[85vh] max-w-full object-contain shadow-2xl rounded-sm">
+                </template>
+                
+                <template x-if="activeMedia && activeMedia.type === 'video'">
+                    <video :src="activeMedia.url" controls autoplay class="max-h-[85vh] max-w-full shadow-2xl rounded-sm"></video>
+                </template>
+
+                <!-- Caption / Info -->
+                <div x-show="activeMedia && activeMedia.caption" class="mt-4 bg-slate-900/80 border border-slate-800 text-slate-200 px-4 py-2 rounded-lg font-mono text-sm max-w-2xl text-center backdrop-blur-sm">
+                    <span x-text="activeMedia.caption"></span>
+                </div>
+
+                <!-- Counter -->
+                <div x-show="mediaList.length > 1" class="absolute -bottom-12 left-1/2 -translate-x-1/2 text-slate-500 font-mono text-xs">
+                    <span x-text="currentIndex + 1"></span> / <span x-text="mediaList.length"></span>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- Leaflet JS -->
@@ -247,11 +348,13 @@
                 map.fitBounds(bounds, { padding: [50, 50] });
             } else {
                 // Default view if no location data
-                const map = L.map('vehicleMap').setView([-6.2088, 106.8456], 11);
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                    attribution: '&copy; OpenStreetMap &copy; CARTO',
-                    subdomains: 'abcd'
-                }).addTo(map);
+                if(document.getElementById('vehicleMap')) {
+                    const map = L.map('vehicleMap').setView([-6.2088, 106.8456], 11);
+                    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                        attribution: '&copy; OpenStreetMap &copy; CARTO',
+                        subdomains: 'abcd'
+                    }).addTo(map);
+                }
             }
         });
     </script>
