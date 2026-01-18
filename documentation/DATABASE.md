@@ -48,7 +48,7 @@ Stores user account information and KYC status.
 | `name` | STRING | User's full name |
 | `email` | STRING | Unique email address |
 | `password` | STRING | Hashed password |
-| `is_admin` | BOOLEAN | `true` if user has admin privileges |
+| `role` | ENUM | Role: `superadmin`, `admin`, `tier_1`, `tier_2`, `user` |
 | `kyc_status` | STRING | Status: `none`, `pending`, `approved`, `rejected` |
 | `kyc_data` | TEXT | JSON string containing document metadata |
 | `kyc_submitted_at` | TIMESTAMP | When the KYC request was made |

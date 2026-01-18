@@ -20,7 +20,7 @@ Get the currently authenticated user.
       "id": 1,
       "name": "Agent 007",
       "email": "agent@matajalan.os",
-      "is_admin": 0,
+      "role": "tier_1",
       "kyc_status": "approved",
       ...
   }

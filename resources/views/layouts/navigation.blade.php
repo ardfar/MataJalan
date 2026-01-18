@@ -105,7 +105,7 @@
                 <x-responsive-nav-link :href="route('kyc.index')" :active="request()->routeIs('kyc.index')">
                     {{ __('KYC') }}
                 </x-responsive-nav-link>
-                @if(Auth::user()->is_admin)
+                @if(Auth::user()->isAdmin())
                     <x-responsive-nav-link :href="route('admin.kyc.index')" :active="request()->routeIs('admin.kyc.*')">
                         {{ __('Admin KYC') }}
                     </x-responsive-nav-link>
