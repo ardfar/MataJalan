@@ -87,21 +87,30 @@
                 </div>
                 
                 @auth
-                    <div class="relative group">
-                        <button class="flex items-center gap-2 px-3 py-1.5 border border-slate-700 hover:border-cyan-500 bg-slate-900 transition-all rounded-sm">
-                            <span class="text-xs font-bold text-cyan-500 font-mono">{{ Auth::user()->name }}</span>
-                            <i data-lucide="chevron-down" class="w-3 h-3 text-slate-500"></i>
-                        </button>
-                        <div class="absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-800 shadow-xl hidden group-hover:block rounded-sm overflow-hidden">
-                            <a href="{{ route('dashboard') }}" class="block px-4 py-2 text-xs font-mono hover:bg-slate-800 text-slate-300">DASHBOARD</a>
+                    <x-dropdown align="right" width="48">
+                        <x-slot name="trigger">
+                            <button class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center hover:border-cyan-500 transition-colors">
+                                <span class="text-xs font-bold text-cyan-500">{{ substr(Auth::user()->name, 0, 2) }}</span>
+                            </button>
+                        </x-slot>
+
+                        <x-slot name="content" class="z-100">
+                            <x-dropdown-link :href="route('dashboard')">
+                                {{ __('Dashboard') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('profile.edit')">
+                                {{ __('Profile') }}
+                            </x-dropdown-link>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
-                                <button type="submit" class="block w-full text-left px-4 py-2 text-xs font-mono hover:bg-slate-800 text-red-400">
-                                    LOGOUT
-                                </button>
+                                <x-dropdown-link :href="route('logout')"
+                                        onclick="event.preventDefault();
+                                                    this.closest('form').submit();">
+                                    {{ __('Log Out') }}
+                                </x-dropdown-link>
                             </form>
-                        </div>
-                    </div>
+                        </x-slot>
+                    </x-dropdown>
                 @else
                     <div class="flex items-center gap-3 font-mono text-xs">
                         <a href="{{ route('login') }}" class="text-slate-400 hover:text-cyan-400">LOGIN</a>
