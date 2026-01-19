@@ -62,6 +62,7 @@ Retrieve detailed information about a specific vehicle.
       "ratings": [ ... ]
   }
   ```
+  **Note:** The `ratings` list will only include **approved** ratings.
 
 ### 4. Submit Rating
 Submit a new rating/report for a vehicle.
@@ -75,12 +76,15 @@ Submit a new rating/report for a vehicle.
       "plate_number": "B1234XYZ",
       "rating": 1,
       "comment": "Reckless driving on highway.",
-      "tags": ["speeding", "aggressive"]
+      "tags": ["speeding", "aggressive"],
+      "honesty_declaration": "accepted"
   }
   ```
 - **Response:**
   - `201 Created`: Rating submitted successfully.
   - `422 Unprocessable Entity`: Validation error.
+  
+  **Note:** Submitted ratings will have a `pending` status and will not be visible publicly until approved by an administrator.
 
 ## Error Handling
 The API returns standard HTTP status codes:

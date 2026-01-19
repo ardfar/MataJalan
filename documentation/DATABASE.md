@@ -9,6 +9,9 @@ The database uses a relational model designed to link Users, Vehicles, and Ratin
 erDiagram
     User ||--o{ Rating : "submits"
     Vehicle ||--o{ Rating : "receives"
+    User ||--o{ AdminAction : "performs"
+    Rating ||--o{ AdminAction : "target"
+    
     User {
         bigint id PK
         string name
@@ -33,6 +36,19 @@ erDiagram
         int rating
         text comment
         json tags
+        enum status
+        bigint approved_by FK
+        timestamp approved_at
+        text rejection_reason
+        timestamp created_at
+    }
+    AdminAction {
+        bigint id PK
+        bigint user_id FK
+        string action_type
+        string target_type
+        bigint target_id
+        json details
         timestamp created_at
     }
 ```
@@ -77,4 +93,22 @@ Stores reports and ratings submitted by users against vehicles.
 | `rating` | INTEGER | Score from 1 (Bad) to 5 (Good) |
 | `comment` | TEXT | Detailed description of the incident |
 | `tags` | JSON | Array of tags (e.g., `["speeding", "safe"]`) |
+| `is_honest` | BOOLEAN | User declaration of truthfulness |
+| `status` | ENUM | `pending` (default), `approved`, `rejected` |
+| `approved_by` | BIGINT | Foreign Key -> `users.id` (Admin who verified) |
+| `approved_at` | TIMESTAMP | When the rating was verified |
+| `rejection_reason` | TEXT | Reason for rejection (if applicable) |
 | `created_at` | TIMESTAMP | When the report was filed |
+
+### 4. `admin_actions`
+Logs administrative actions performed on the platform.
+
+| Column | Type | Description |
+| :--- | :--- | :--- |
+| `id` | BIGINT | Primary Key |
+| `user_id` | BIGINT | Foreign Key -> `users.id` (Admin) |
+| `action_type` | STRING | Type of action (e.g., `approve_rating`, `reject_rating`) |
+| `target_type` | STRING | Polymorphic relation type (e.g., `App\Models\Rating`) |
+| `target_id` | BIGINT | Polymorphic relation ID |
+| `details` | JSON | Additional metadata (e.g., rejection reason) |
+| `created_at` | TIMESTAMP | When the action occurred |
