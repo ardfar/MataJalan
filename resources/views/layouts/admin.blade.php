@@ -41,7 +41,7 @@
         </div>
 
         <nav class="flex-1 overflow-y-auto p-4 space-y-1">
-            <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-4 py-3 text-xs font-mono rounded hover:bg-slate-800 {{ request()->routeIs('admin.dashboard') ? 'bg-slate-800 text-cyan-400 border-l-2 border-cyan-500' : 'text-slate-400 border-l-2 border-transparent' }}">
+            <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-4 py-3 text-xs font-mono rounded hover:bg-slate-800 {{ request()->routeIs('dashboard') ? 'bg-slate-800 text-cyan-400 border-l-2 border-cyan-500' : 'text-slate-400 border-l-2 border-transparent' }}">
                 <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
                 OVERVIEW
             </a>

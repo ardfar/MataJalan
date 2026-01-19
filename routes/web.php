@@ -31,9 +31,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/vehicle/{vehicle}/feedback', [WebController::class, 'storeFeedback'])->name('vehicle.storeFeedback');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+use App\Http\Controllers\DashboardController;
+
+// ...
+
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 // Profile Routes
 Route::middleware('auth')->group(function () {
