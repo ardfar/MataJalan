@@ -135,6 +135,15 @@
                                             </div>
                                         @endif
 
+                                        @if($rating->status === 'pending')
+                                            <div class="absolute top-0 right-0 {{ $rating->is_honest ? 'mr-32' : '' }}">
+                                                <div class="bg-yellow-900/20 text-yellow-500 text-[10px] font-mono uppercase px-2 py-1 rounded-bl border-l border-b border-yellow-500/30 flex items-center gap-1">
+                                                    <i data-lucide="clock" class="w-3 h-3"></i>
+                                                    Pending Approval
+                                                </div>
+                                            </div>
+                                        @endif
+
                                         <div class="flex justify-between items-start mb-4">
                                             <div class="flex items-center gap-3">
                                                 <div class="w-10 h-10 rounded bg-slate-900 flex items-center justify-center font-mono font-bold text-slate-500 border border-slate-800">

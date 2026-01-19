@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminKycController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\AdminRatingController;
 use App\Http\Controllers\KycController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WebController;
@@ -61,6 +62,11 @@ Route::middleware(['auth', 'verified', EnsureIsAdmin::class])->prefix('admin')->
     Route::get('/kyc/{user}/download', [AdminKycController::class, 'download'])->name('kyc.download');
     Route::patch('/kyc/{user}/approve', [AdminKycController::class, 'approve'])->name('kyc.approve');
     Route::patch('/kyc/{user}/reject', [AdminKycController::class, 'reject'])->name('kyc.reject');
+
+    // Rating Management
+    Route::get('/ratings', [AdminRatingController::class, 'index'])->name('ratings.index');
+    Route::patch('/ratings/{rating}/approve', [AdminRatingController::class, 'approve'])->name('ratings.approve');
+    Route::patch('/ratings/{rating}/reject', [AdminRatingController::class, 'reject'])->name('ratings.reject');
 });
 
 require __DIR__.'/auth.php';

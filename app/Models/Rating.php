@@ -18,7 +18,11 @@ class Rating extends Model
         'latitude',
         'longitude',
         'address',
-        'is_honest'
+        'is_honest',
+        'status',
+        'approved_by',
+        'approved_at',
+        'rejection_reason',
     ];
 
     protected $casts = [
@@ -26,8 +30,26 @@ class Rating extends Model
         'is_honest' => 'boolean',
         'latitude' => 'decimal:8',
         'longitude' => 'decimal:8',
+        'approved_at' => 'datetime',
     ];
 
+    // Scopes
+    public function scopeApproved($query)
+    {
+        return $query->where('status', 'approved');
+    }
+
+    public function scopePending($query)
+    {
+        return $query->where('status', 'pending');
+    }
+
+    public function scopeRejected($query)
+    {
+        return $query->where('status', 'rejected');
+    }
+
+    // Relationships
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -41,5 +63,10 @@ class Rating extends Model
     public function media()
     {
         return $this->hasMany(RatingMedia::class);
+    }
+
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 }

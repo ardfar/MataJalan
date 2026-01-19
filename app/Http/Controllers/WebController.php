@@ -7,6 +7,7 @@ use App\Models\RatingMedia;
 use App\Models\Vehicle;
 use App\Models\User;
 use App\Models\RegistrationFeedback;
+use App\Notifications\NewRatingPending;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -16,9 +17,13 @@ class WebController extends Controller
 {
     public function index()
     {
-        // 1. Fetch all vehicles with ratings data
-        $allVehicles = Vehicle::withAvg('ratings', 'rating')
-            ->withCount('ratings')
+        // 1. Fetch all vehicles with APPROVED ratings data
+        $allVehicles = Vehicle::withAvg(['ratings' => function($query) {
+                $query->approved();
+            }], 'rating')
+            ->withCount(['ratings' => function($query) {
+                $query->approved();
+            }])
             ->latest()
             ->take(100) // Limit for performance in demo
             ->get();
@@ -49,7 +54,10 @@ class WebController extends Controller
                 'lastSeen' => $vehicle->updated_at->diffForHumans(),
                 'location' => $location,
                 'reports' => $vehicle->ratings_count,
-                'tags' => $vehicle->ratings->pluck('tags')->flatten()->unique()->values()->all() ?? [],
+                // Only showing tags from approved ratings would be expensive here without optimized query
+                // For demo, we keep this simple or fetch relationship if needed. 
+                // Let's assume we want only approved tags.
+                'tags' => $vehicle->ratings()->approved()->pluck('tags')->flatten()->unique()->values()->all() ?? [],
                 'status' => $status,
                 'raw_updated_at' => $vehicle->updated_at
             ];
@@ -113,23 +121,23 @@ class WebController extends Controller
         if (Str::isUuid($identifier)) {
             // Use UUID to find
             $vehicle = Vehicle::where('uuid', $identifier)
-                ->withAvg('ratings', 'rating')
-                ->withCount('ratings')
+                ->withAvg(['ratings' => function($q) { $q->approved(); }], 'rating')
+                ->withCount(['ratings' => function($q) { $q->approved(); }])
                 ->firstOrFail();
             $plate_number = $vehicle->plate_number;
         } else {
             // Backward compatibility: Try exact match first
             $vehicle = Vehicle::where('plate_number', $identifier)
-                ->withAvg('ratings', 'rating')
-                ->withCount('ratings')
+                ->withAvg(['ratings' => function($q) { $q->approved(); }], 'rating')
+                ->withCount(['ratings' => function($q) { $q->approved(); }])
                 ->first();
 
             // If not found, try fuzzy match using normalized column
             if (!$vehicle) {
                 $normalizedInput = Vehicle::normalizePlate($identifier);
                 $vehicle = Vehicle::where('normalized_plate_number', $normalizedInput)
-                    ->withAvg('ratings', 'rating')
-                    ->withCount('ratings')
+                    ->withAvg(['ratings' => function($q) { $q->approved(); }], 'rating')
+                    ->withCount(['ratings' => function($q) { $q->approved(); }])
                     ->first();
                 $plate_number = $normalizedInput ?: $identifier;
             }
@@ -142,12 +150,23 @@ class WebController extends Controller
 
         $ratings = null;
         if ($vehicle) {
-            $ratings = $vehicle->ratings()
-                ->with(['user' => function($query) {
+            // Show approved ratings AND user's own pending ratings
+            $ratingsQuery = $vehicle->ratings()
+                ->where(function($query) {
+                    $query->approved();
+                    if (Auth::check()) {
+                        $query->orWhere('user_id', Auth::id());
+                    }
+                });
+            
+            $ratings = $ratingsQuery->with(['user' => function($query) {
                     $query->select('id', 'name');
                 }, 'media'])
                 ->latest()
                 ->paginate(5);
+            
+            // Explicitly load ratings for the view to use in the map, filtered by the same logic but without pagination
+            $vehicle->setRelation('ratings', $ratingsQuery->get());
         }
 
         return view('vehicle.show', compact('vehicle', 'plate_number', 'ratings'));
@@ -217,6 +236,7 @@ class WebController extends Controller
             'longitude' => $request->longitude,
             'address' => $request->address,
             'is_honest' => true,
+            'status' => 'pending', // Default status
         ]);
 
         if ($request->hasFile('media')) {
@@ -235,9 +255,12 @@ class WebController extends Controller
                 ]);
             }
         }
+        
+        // Notification logic
+        \Illuminate\Support\Facades\Notification::route('mail', 'admin@matajalan.os')->notify(new NewRatingPending($rating));
 
         return redirect()->route('vehicle.show', ['identifier' => $vehicle->uuid])
-            ->with('success', 'Rating submitted successfully!');
+            ->with('success', 'Rating submitted and awaiting verification!');
     }
 
     public function create($identifier)
