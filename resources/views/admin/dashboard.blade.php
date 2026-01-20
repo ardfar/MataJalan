@@ -3,7 +3,7 @@
 @section('header', 'SYSTEM_OVERVIEW')
 
 @section('content')
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
     <!-- Stat Cards -->
     <div class="bg-slate-900 border border-slate-800 p-4 rounded relative overflow-hidden group">
         <div class="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
@@ -35,6 +35,17 @@
         <div class="text-3xl font-bold text-white font-mono">{{ $stats['pending_kyc'] }}</div>
         @if($stats['pending_kyc'] > 0)
             <a href="{{ route('admin.kyc.index') }}" class="mt-2 inline-block text-[10px] text-amber-400 hover:text-amber-300 underline">Review Queue &rarr;</a>
+        @endif
+    </div>
+
+    <div class="bg-slate-900 border border-slate-800 p-4 rounded relative overflow-hidden group">
+        <div class="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+            <i data-lucide="star" class="w-16 h-16 text-yellow-500"></i>
+        </div>
+        <div class="text-xs text-slate-500 font-mono uppercase mb-1">Pending Ratings</div>
+        <div class="text-3xl font-bold text-white font-mono">{{ $stats['pending_ratings'] }}</div>
+        @if($stats['pending_ratings'] > 0)
+            <a href="{{ route('admin.ratings.index', ['status' => 'pending']) }}" class="mt-2 inline-block text-[10px] text-yellow-400 hover:text-yellow-300 underline">Review Queue &rarr;</a>
         @endif
     </div>
 

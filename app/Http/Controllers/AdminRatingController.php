@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AdminAction;
 use App\Models\Rating;
+use App\Models\User;
 use App\Notifications\RatingStatusUpdated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,15 +15,43 @@ class AdminRatingController extends Controller
     {
         $query = Rating::query()->with(['user', 'vehicle', 'media']);
 
-        // Filter by status, default to pending
+        // Filter by status
         $status = $request->input('status', 'pending');
         if ($status !== 'all') {
             $query->where('status', $status);
         }
 
+        // Filter by Date Range
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        // Filter by User (Search by name or email)
+        if ($request->filled('search_user')) {
+            $search = $request->search_user;
+            $query->whereHas('user', function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by Rating Value
+        if ($request->filled('rating_value')) {
+            $query->where('rating', $request->rating_value);
+        }
+
         $ratings = $query->latest()->paginate(20)->withQueryString();
 
         return view('admin.ratings.index', compact('ratings', 'status'));
+    }
+
+    public function show(Rating $rating)
+    {
+        $rating->load(['user', 'vehicle', 'media', 'adminActions.user', 'approver']);
+        return view('admin.ratings.show', compact('rating'));
     }
 
     public function approve(Request $request, Rating $rating)
@@ -31,6 +60,7 @@ class AdminRatingController extends Controller
             'status' => 'approved',
             'approved_by' => Auth::id(),
             'approved_at' => now(),
+            'rejection_reason' => null, // Clear any previous rejection reason
         ]);
 
         $this->logAction('approve_rating', $rating);

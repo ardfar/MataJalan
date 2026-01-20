@@ -69,6 +69,7 @@ Route::middleware(['auth', 'verified', EnsureIsAdmin::class])->prefix('admin')->
 
     // Rating Management
     Route::get('/ratings', [AdminRatingController::class, 'index'])->name('ratings.index');
+    Route::get('/ratings/{rating}', [AdminRatingController::class, 'show'])->name('ratings.show');
     Route::patch('/ratings/{rating}/approve', [AdminRatingController::class, 'approve'])->name('ratings.approve');
     Route::patch('/ratings/{rating}/reject', [AdminRatingController::class, 'reject'])->name('ratings.reject');
 });

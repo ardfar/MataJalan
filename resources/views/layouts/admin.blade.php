@@ -61,6 +61,14 @@
                 @endif
             </a>
 
+            <a href="{{ route('admin.ratings.index') }}" class="flex items-center gap-3 px-4 py-3 text-xs font-mono rounded hover:bg-slate-800 {{ request()->routeIs('admin.ratings.*') ? 'bg-slate-800 text-cyan-400 border-l-2 border-cyan-500' : 'text-slate-400 border-l-2 border-transparent' }}">
+                <i data-lucide="star" class="w-4 h-4"></i>
+                RATING_REVIEW
+                @if(\App\Models\Rating::where('status', 'pending')->count() > 0)
+                    <span class="ml-auto bg-yellow-500 text-black text-[10px] px-1.5 rounded-full font-bold">!</span>
+                @endif
+            </a>
+
             <div class="pt-4 pb-2 px-4 text-[10px] font-mono text-slate-600 uppercase">System</div>
             
             <a href="#" class="flex items-center gap-3 px-4 py-3 text-xs font-mono rounded hover:bg-slate-800 text-slate-400 border-l-2 border-transparent">
