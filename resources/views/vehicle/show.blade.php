@@ -11,13 +11,27 @@
             background: #0f172a;
         }
         .leaflet-popup-content-wrapper {
-            background: #1e293b;
+            background: #0f172a; /* Slate-900 */
             color: #f1f5f9;
-            border: 1px solid #334155;
+            border: 1px solid #1e293b; /* Slate-800 */
             border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            padding: 0;
+            overflow: hidden;
+        }
+        .leaflet-popup-content {
+            margin: 0;
+            line-height: 1.5;
         }
         .leaflet-popup-tip {
-            background: #1e293b;
+            background: #1e293b; /* Slate-800 to match border */
+        }
+        .rating-popup-enter {
+            animation: popup-scale 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes popup-scale {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
     </style>
 
@@ -344,14 +358,36 @@
                     const lng = parseFloat(loc.longitude);
                     bounds.extend([lat, lng]);
                     
+                    // Generate stars HTML
+                    let starsHtml = '';
+                    for(let i=1; i<=5; i++) {
+                        const fillClass = i <= loc.rating ? 'fill-amber-400 text-amber-400' : 'text-slate-700';
+                        starsHtml += `<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 ${fillClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+                    }
+                    
+                    const category = loc.tags && loc.tags.length > 0 ? loc.tags[0].toUpperCase() : 'VERIFIED RATING';
+                    const dateStr = new Date(loc.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    
                     L.marker([lat, lng])
                         .addTo(map)
                         .bindPopup(`
-                            <div class="font-mono text-xs">
-                                <strong>${loc.created_at}</strong><br>
-                                ${loc.address || 'Unknown Location'}
+                            <div class="rating-popup-enter p-4 min-w-[160px] text-center" role="dialog" aria-label="Rating Details">
+                                <div class="text-[10px] font-mono text-cyan-500 uppercase mb-2 tracking-wider border-b border-slate-800 pb-1">${category}</div>
+                                <div class="flex items-baseline justify-center gap-1 mb-2">
+                                    <span class="text-4xl font-bold font-mono text-white leading-none tracking-tighter" aria-label="Rating ${loc.rating} out of 5">${loc.rating}</span>
+                                    <span class="text-xs font-mono text-slate-500">/5.0</span>
+                                </div>
+                                <div class="flex justify-center gap-1 mb-3 bg-slate-950 p-1.5 rounded border border-slate-800 inline-flex" aria-hidden="true">
+                                    ${starsHtml}
+                                </div>
+                                <div class="text-[10px] text-slate-500 font-mono">
+                                    ${dateStr}
+                                </div>
                             </div>
-                        `, { className: 'custom-map-popup' });
+                        `, { 
+                            className: 'custom-map-popup',
+                            minWidth: 160
+                        });
                 });
                 
                 map.fitBounds(bounds, { padding: [50, 50] });
