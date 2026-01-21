@@ -1,4 +1,5 @@
 <x-app-layout>
+    @section('title', 'Registration Complete | MATAJALAN_OS')
     <x-slot name="header">
         {{ __('REGISTRATION_COMPLETE') }}
     </x-slot>

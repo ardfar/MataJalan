@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 
+@section('title', 'Edit Operative | MATAJALAN_OS')
+
 @section('header', 'EDIT_OPERATIVE_PROFILE')
 
 @section('content')

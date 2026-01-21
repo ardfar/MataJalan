@@ -1,4 +1,5 @@
 <x-app-layout>
+    @section('title', 'Vehicle Profile | MATAJALAN_OS')
     <x-slot name="header">
         {{ __('TARGET_PROFILE') }} // {{ $vehicle ? $vehicle->plate_number : $plate_number }}
     </x-slot>

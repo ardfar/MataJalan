@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 
+@section('title', 'Create Operative | MATAJALAN_OS')
+
 @section('header', 'ADD_NEW_OPERATIVE')
 
 @section('content')

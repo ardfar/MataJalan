@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 
+@section('title', 'Rating Details | MATAJALAN_OS')
+
 @section('header')
     RATING_DETAILS <span class="text-slate-500 text-sm ml-2">#{{ $rating->id }}</span>
 @endsection

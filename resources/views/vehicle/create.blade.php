@@ -1,4 +1,5 @@
 <x-app-layout>
+    @section('title', 'Register Vehicle | MATAJALAN_OS')
     <x-slot name="header">
         {{ __('REGISTER_NEW_TARGET') }} // {{ $plate_number }}
     </x-slot>

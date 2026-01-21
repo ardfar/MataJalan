@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 
+@section('title', 'Command Center | MATAJALAN_OS')
+
 @section('header', 'SYSTEM_OVERVIEW')
 
 @section('content')

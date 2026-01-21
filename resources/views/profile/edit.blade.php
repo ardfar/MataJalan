@@ -1,4 +1,5 @@
 <x-app-layout>
+    @section('title', 'Profile | MATAJALAN_OS')
     <x-slot name="header">
         {{ __('PROFILE_SETTINGS') }}
     </x-slot>

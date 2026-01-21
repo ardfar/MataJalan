@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 
+@section('title', 'User Management | MATAJALAN_OS')
+
 @section('header', 'USER_MANAGEMENT')
 
 @section('content')

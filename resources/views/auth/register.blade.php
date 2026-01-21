@@ -1,4 +1,5 @@
 <x-guest-layout>
+    @section('title', 'Register | MATAJALAN_OS')
     <div class="mb-6 text-center">
         <h2 class="text-2xl font-bold font-mono text-slate-100 tracking-tight flex items-center justify-center gap-2">
             <i data-lucide="user-plus" class="w-6 h-6 text-cyan-500"></i>

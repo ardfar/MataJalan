@@ -1,4 +1,5 @@
 <x-guest-layout>
+    @section('title', 'Reset Password | MATAJALAN_OS')
     <div class="mb-6 text-center">
         <h2 class="text-xl font-bold font-mono text-slate-100 tracking-tight flex items-center justify-center gap-2">
             <i data-lucide="key-round" class="w-5 h-5 text-cyan-500"></i>

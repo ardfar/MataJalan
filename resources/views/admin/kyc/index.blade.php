@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 
+@section('title', 'KYC Requests | MATAJALAN_OS')
+
 @section('header', 'KYC_VERIFICATION_QUEUE')
 
 @section('content')

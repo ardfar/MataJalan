@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>MATAJALAN_OS // COMMAND_CENTER</title>
+    <title>@yield('title', 'COMMAND_CENTER') // MATAJALAN_OS</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

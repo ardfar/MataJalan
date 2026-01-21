@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 
+@section('title', 'KYC Details | MATAJALAN_OS')
+
 @section('header', 'CASE_REVIEW: ' . strtoupper($user->name))
 
 @section('content')

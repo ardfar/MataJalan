@@ -1,4 +1,5 @@
 <x-app-layout>
+    @section('title', 'KYC Verification | MATAJALAN_OS')
     <x-slot name="header">
         {{ __('KYC VERIFICATION') }}
     </x-slot>

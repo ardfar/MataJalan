@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 
+@section('title', 'Rating Moderation | MATAJALAN_OS')
+
 @section('header', 'RATING_MODERATION')
 
 @section('content')

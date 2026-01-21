@@ -1,4 +1,5 @@
 <x-app-layout>
+    @section('title', 'Submit Report | MATAJALAN_OS')
     <x-slot name="header">
         {{ __('SUBMIT_INCIDENT_REPORT') }}
     </x-slot>

@@ -1,4 +1,5 @@
 <x-app-layout>
+    @section('title', 'Dashboard | MATAJALAN_OS')
     <x-slot name="header">
         {{ __('OPERATIVE_DASHBOARD') }}
     </x-slot>
