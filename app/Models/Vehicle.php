@@ -62,4 +62,9 @@ class Vehicle extends Model
     {
         return $this->hasMany(RegistrationFeedback::class);
     }
+
+    public function vehicleUsers()
+    {
+        return $this->hasMany(VehicleUser::class);
+    }
 }

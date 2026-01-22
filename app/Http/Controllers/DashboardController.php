@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Vehicle;
+use App\Models\VehicleUser;
 use App\Models\Rating;
 use App\Models\AuditLog;
 use Illuminate\Http\Request;
@@ -30,6 +31,7 @@ class DashboardController extends Controller
             'pending_kyc' => User::where('kyc_status', 'pending')->count(),
             'total_vehicles' => Vehicle::count(),
             'pending_ratings' => Rating::where('status', 'pending')->count(),
+            'pending_vehicle_users' => VehicleUser::where('status', 'pending')->count(),
         ];
 
         // Recent Audit Logs

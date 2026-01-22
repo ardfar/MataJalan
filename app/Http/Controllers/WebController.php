@@ -181,8 +181,8 @@ class WebController extends Controller
                 // Audit Log
                 AuditLog::create([
                     'user_id' => $user->id,
-                    'action' => 'VIEW_SPECS',
-                    'description' => "Viewed specifications for vehicle {$vehicle->plate_number}",
+                    'action' => 'VIEW_SPECS_DRIVERS',
+                    'description' => "Viewed specifications and driver info for vehicle {$vehicle->plate_number}",
                     'ip_address' => request()->ip(),
                 ]);
             }

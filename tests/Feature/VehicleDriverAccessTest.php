@@ -5,42 +5,56 @@ namespace Tests\Feature;
 use App\Models\AuditLog;
 use App\Models\User;
 use App\Models\Vehicle;
+use App\Models\VehicleUser;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class VehicleSpecsAccessTest extends TestCase
+class VehicleDriverAccessTest extends TestCase
 {
     use RefreshDatabase;
 
     protected $vehicle;
+    protected $driverUser;
+    protected $vehicleUser;
 
     protected function setUp(): void
     {
         parent::setUp();
-        // Create a vehicle with specs
+        // Create a vehicle
         $this->vehicle = Vehicle::factory()->create([
-            'make' => 'Toyota',
-            'model' => 'Camry',
-            'year' => 2023,
-            'color' => 'Black',
-            'vin' => '1234567890ABCDEFG',
+            'plate_number' => 'B1234TST',
+        ]);
+
+        // Create a driver user
+        $this->driverUser = User::factory()->create(['name' => 'John Driver']);
+
+        // Attach driver to vehicle (Approved)
+        $this->vehicleUser = VehicleUser::create([
+            'user_id' => $this->driverUser->id,
+            'vehicle_id' => $this->vehicle->id,
+            'role_type' => 'personal',
+            'driver_name' => 'Mr. Chauffeur',
+            'status' => 'approved',
+            'evidence_path' => 'dummy.pdf',
+            'reviewed_by' => User::factory()->create(['role' => 'admin'])->id,
+            'reviewed_at' => now(),
         ]);
     }
 
     /** @test */
-    public function guest_cannot_view_specs()
+    public function guest_cannot_view_driver_info()
     {
         $response = $this->get(route('vehicle.show', $this->vehicle->uuid));
 
         $response->assertStatus(200);
         $response->assertSee('ACCESS_DENIED');
-        // The header is visible, but the content is restricted
-        $response->assertDontSee('1234567890ABCDEFG'); // VIN
+        $response->assertSee('AUTHORIZED_DRIVERS');
+        $response->assertDontSee('Mr. Chauffeur');
         $response->assertDontSee('ACCESS_GRANTED');
     }
 
     /** @test */
-    public function regular_user_cannot_view_specs()
+    public function regular_user_cannot_view_driver_info()
     {
         $user = User::factory()->create(['role' => 'user']);
 
@@ -48,13 +62,13 @@ class VehicleSpecsAccessTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('ACCESS_DENIED');
-        $response->assertDontSee('1234567890ABCDEFG');
+        $response->assertDontSee('Mr. Chauffeur');
         
         $this->assertDatabaseCount('audit_logs', 0);
     }
 
     /** @test */
-    public function superadmin_can_view_specs()
+    public function superadmin_can_view_driver_info()
     {
         $user = User::factory()->create(['role' => 'superadmin']);
 
@@ -62,9 +76,9 @@ class VehicleSpecsAccessTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('ACCESS_GRANTED');
-        $response->assertSee('Toyota');
-        $response->assertSee('Camry');
-        $response->assertSee('1234567890ABCDEFG');
+        $response->assertSee('AUTHORIZED_DRIVERS');
+        $response->assertSee('Mr. Chauffeur');
+        $response->assertSee('personal'); // Role type (css handles uppercase)
         
         $this->assertDatabaseHas('audit_logs', [
             'user_id' => $user->id,
@@ -74,7 +88,7 @@ class VehicleSpecsAccessTest extends TestCase
     }
 
     /** @test */
-    public function admin_can_view_specs()
+    public function admin_can_view_driver_info()
     {
         $user = User::factory()->create(['role' => 'admin']);
 
@@ -82,7 +96,7 @@ class VehicleSpecsAccessTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('ACCESS_GRANTED');
-        $response->assertSee('1234567890ABCDEFG');
+        $response->assertSee('Mr. Chauffeur');
         
         $this->assertDatabaseHas('audit_logs', [
             'user_id' => $user->id,
@@ -91,7 +105,7 @@ class VehicleSpecsAccessTest extends TestCase
     }
 
     /** @test */
-    public function verified_tier1_user_can_view_specs()
+    public function verified_tier1_user_can_view_driver_info()
     {
         $user = User::factory()->create([
             'role' => 'tier_1',
@@ -102,7 +116,7 @@ class VehicleSpecsAccessTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('ACCESS_GRANTED');
-        $response->assertSee('1234567890ABCDEFG');
+        $response->assertSee('Mr. Chauffeur');
 
         $this->assertDatabaseHas('audit_logs', [
             'user_id' => $user->id,
@@ -111,7 +125,7 @@ class VehicleSpecsAccessTest extends TestCase
     }
 
     /** @test */
-    public function unverified_tier1_user_cannot_view_specs()
+    public function unverified_tier1_user_cannot_view_driver_info()
     {
         $user = User::factory()->create([
             'role' => 'tier_1',
@@ -122,8 +136,32 @@ class VehicleSpecsAccessTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('ACCESS_DENIED');
-        $response->assertDontSee('1234567890ABCDEFG');
+        $response->assertDontSee('Mr. Chauffeur');
         
         $this->assertDatabaseCount('audit_logs', 0);
+    }
+
+    /** @test */
+    public function pending_driver_is_not_shown()
+    {
+        // Create another driver request that is pending
+        $pending = VehicleUser::create([
+            'user_id' => User::factory()->create()->id,
+            'vehicle_id' => $this->vehicle->id,
+            'role_type' => 'taxi',
+            'driver_name' => 'Mr. Pending',
+            'status' => 'pending',
+            'evidence_path' => 'dummy.pdf',
+        ]);
+
+        $this->assertEquals('pending', $pending->status);
+
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $response = $this->actingAs($admin)->get(route('vehicle.show', $this->vehicle->uuid));
+
+        $response->assertStatus(200);
+        $response->assertSee('Mr. Chauffeur'); // Approved one
+        $response->assertDontSee('Mr. Pending'); // Pending one should be filtered out by Controller query
     }
 }

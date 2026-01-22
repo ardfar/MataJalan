@@ -17,6 +17,7 @@ Route::post('/search', [WebController::class, 'search'])->name('vehicle.search')
 Route::get('/vehicle/{identifier}', [WebController::class, 'show'])->name('vehicle.show');
 
 use App\Http\Controllers\VehicleEditController;
+use App\Http\Controllers\VehicleUserController;
 use App\Http\Controllers\Admin\VehicleEditController as AdminVehicleEditController;
 
 // Protected Routes (Login required)
@@ -32,6 +33,10 @@ Route::middleware(['auth'])->group(function () {
     // Vehicle Edits
     Route::get('/vehicle/{vehicle}/edit', [VehicleEditController::class, 'create'])->name('vehicle.edit');
     Route::post('/vehicle/{vehicle}/update-request', [VehicleEditController::class, 'store'])->name('vehicle.update-request');
+
+    // Vehicle User Registration
+    Route::get('/vehicle/{vehicle}/user/create', [VehicleUserController::class, 'create'])->name('vehicle.user.create');
+    Route::post('/vehicle/{vehicle}/user/store', [VehicleUserController::class, 'store'])->name('vehicle.user.store');
     
     // These use model binding which we updated to use UUID
     Route::get('/vehicle/{vehicle}/registered', [WebController::class, 'registered'])->name('vehicle.registered');
@@ -85,6 +90,12 @@ Route::middleware(['auth', 'verified', EnsureIsAdmin::class])->prefix('admin')->
     Route::get('/vehicle-edits/{edit}/document', [AdminVehicleEditController::class, 'downloadDocument'])->name('vehicle-edits.download');
     Route::patch('/vehicle-edits/{edit}/approve', [AdminVehicleEditController::class, 'approve'])->name('vehicle-edits.approve');
     Route::patch('/vehicle-edits/{edit}/reject', [AdminVehicleEditController::class, 'reject'])->name('vehicle-edits.reject');
+
+    // Vehicle Users Management
+    Route::get('/vehicle-users', [VehicleUserController::class, 'index'])->name('vehicle-users.index');
+    Route::get('/vehicle-users/{vehicleUser}', [VehicleUserController::class, 'show'])->name('vehicle-users.show');
+    Route::get('/vehicle-users/{vehicleUser}/evidence', [VehicleUserController::class, 'downloadEvidence'])->name('vehicle-users.download');
+    Route::patch('/vehicle-users/{vehicleUser}/update', [VehicleUserController::class, 'update'])->name('vehicle-users.update');
 });
 
 require __DIR__.'/auth.php';

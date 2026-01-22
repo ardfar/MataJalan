@@ -103,6 +103,10 @@
                                         <i data-lucide="edit" class="w-4 h-4 mr-2"></i>
                                         EDIT_INFO
                                     </a>
+                                    <a href="{{ route('vehicle.user.create', $vehicle->uuid) }}" class="inline-flex items-center justify-center px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono font-bold text-xs uppercase tracking-wider transition-all border border-slate-700 hover:border-cyan-500/50">
+                                        <i data-lucide="user-plus" class="w-4 h-4 mr-2"></i>
+                                        REGISTER_AS_USER
+                                    </a>
                                 @endif
                             @endauth
                             <a href="{{ route('vehicle.rate', $vehicle ? $vehicle->uuid : $plate_number) }}" class="inline-flex items-center justify-center px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-mono font-bold text-sm uppercase tracking-wider transition-all clip-path-polygon hover:shadow-[0_0_15px_rgba(6,182,212,0.5)]">
@@ -256,6 +260,79 @@
                                             AUTHENTICATE_USER
                                         </a>
                                     @endauth
+                                </div>
+                            @endif
+                        </div>
+
+                        <!-- Authorized Drivers Section -->
+                        <div class="mb-8 bg-slate-900 border border-slate-800 rounded-lg overflow-hidden">
+                            <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                                <h2 class="text-lg font-mono font-bold text-slate-100 flex items-center gap-2">
+                                    <i data-lucide="users" class="text-cyan-500"></i>
+                                    AUTHORIZED_DRIVERS
+                                </h2>
+                                @if($canViewSpecs)
+                                    <span class="px-2 py-1 bg-emerald-900/30 text-emerald-400 text-[10px] font-mono rounded border border-emerald-500/30">ACCESS_GRANTED</span>
+                                @else
+                                    <span class="px-2 py-1 bg-red-900/30 text-red-400 text-[10px] font-mono rounded border border-red-500/30">RESTRICTED_DATA</span>
+                                @endif
+                            </div>
+
+                            @if($canViewSpecs)
+                                <div class="p-6">
+                                    @php
+                                        $approvedDrivers = $vehicle->vehicleUsers->where('status', 'approved');
+                                    @endphp
+                                    @if($approvedDrivers->count() > 0)
+                                        <div class="overflow-x-auto">
+                                            <table class="w-full text-left border-collapse">
+                                                <thead>
+                                                    <tr class="border-b border-slate-800 text-xs font-mono text-slate-500 uppercase">
+                                                        <th class="py-2 px-4">Driver Name</th>
+                                                        <th class="py-2 px-4">Role Type</th>
+                                                        <th class="py-2 px-4">Registered By</th>
+                                                        <th class="py-2 px-4">Verified At</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="text-sm font-mono text-slate-300">
+                                                    @foreach($approvedDrivers as $vUser)
+                                                        <tr class="border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors">
+                                                            <td class="py-3 px-4 font-bold text-white">{{ $vUser->driver_name }}</td>
+                                                            <td class="py-3 px-4">
+                                                                <span class="px-2 py-1 bg-slate-800 text-slate-400 text-[10px] rounded border border-slate-700 uppercase">
+                                                                    {{ str_replace('_', ' ', $vUser->role_type) }}
+                                                                </span>
+                                                            </td>
+                                                            <td class="py-3 px-4 flex items-center gap-2">
+                                                                <div class="w-6 h-6 rounded bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-500">
+                                                                    {{ substr($vUser->user->name ?? '?', 0, 1) }}
+                                                                </div>
+                                                                {{ $vUser->user->name ?? 'Unknown' }}
+                                                            </td>
+                                                            <td class="py-3 px-4 text-slate-500 text-xs">
+                                                                {{ $vUser->reviewed_at ? $vUser->reviewed_at->format('M d, Y') : 'N/A' }}
+                                                            </td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    @else
+                                        <div class="text-center py-8">
+                                            <i data-lucide="user-x" class="w-8 h-8 text-slate-600 mx-auto mb-2"></i>
+                                            <p class="text-slate-500 font-mono text-sm">No authorized drivers found for this vehicle.</p>
+                                        </div>
+                                    @endif
+                                </div>
+                            @else
+                                <div class="p-8 text-center bg-slate-950/50">
+                                    <div class="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-800">
+                                        <i data-lucide="shield-alert" class="w-8 h-8 text-slate-600"></i>
+                                    </div>
+                                    <h3 class="text-lg font-mono font-bold text-slate-300 mb-2">ACCESS_DENIED</h3>
+                                    <p class="text-sm text-slate-500 font-mono mb-6 max-w-md mx-auto">
+                                        Driver identity information is classified. Access is restricted to Tier-1 Verified Users and System Administrators.
+                                    </p>
                                 </div>
                             @endif
                         </div>
