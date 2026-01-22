@@ -96,10 +96,20 @@
                             <p class="text-xs font-mono text-slate-500 uppercase">Vehicle Identification Number // Verified in Database</p>
                         </div>
                         
-                        <a href="{{ route('vehicle.rate', $vehicle ? $vehicle->uuid : $plate_number) }}" class="inline-flex items-center justify-center px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-mono font-bold text-sm uppercase tracking-wider transition-all clip-path-polygon hover:shadow-[0_0_15px_rgba(6,182,212,0.5)]">
-                            <i data-lucide="file-plus" class="w-4 h-4 mr-2"></i>
-                            SUBMIT_REPORT
-                        </a>
+                        <div class="flex gap-2">
+                            @auth
+                                @if($vehicle)
+                                    <a href="{{ route('vehicle.edit', $vehicle->uuid) }}" class="inline-flex items-center justify-center px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono font-bold text-xs uppercase tracking-wider transition-all border border-slate-700 hover:border-cyan-500/50">
+                                        <i data-lucide="edit" class="w-4 h-4 mr-2"></i>
+                                        EDIT_INFO
+                                    </a>
+                                @endif
+                            @endauth
+                            <a href="{{ route('vehicle.rate', $vehicle ? $vehicle->uuid : $plate_number) }}" class="inline-flex items-center justify-center px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-mono font-bold text-sm uppercase tracking-wider transition-all clip-path-polygon hover:shadow-[0_0_15px_rgba(6,182,212,0.5)]">
+                                <i data-lucide="file-plus" class="w-4 h-4 mr-2"></i>
+                                SUBMIT_REPORT
+                            </a>
+                        </div>
                     </div>
 
                     @if($vehicle)

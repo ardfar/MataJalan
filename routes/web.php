@@ -16,6 +16,9 @@ Route::get('/', [WebController::class, 'index'])->name('home');
 Route::post('/search', [WebController::class, 'search'])->name('vehicle.search');
 Route::get('/vehicle/{identifier}', [WebController::class, 'show'])->name('vehicle.show');
 
+use App\Http\Controllers\VehicleEditController;
+use App\Http\Controllers\Admin\VehicleEditController as AdminVehicleEditController;
+
 // Protected Routes (Login required)
 Route::middleware(['auth'])->group(function () {
     // Rating might require login
@@ -25,6 +28,10 @@ Route::middleware(['auth'])->group(function () {
     // Vehicle Registration
     Route::get('/vehicle/{identifier}/create', [WebController::class, 'create'])->name('vehicle.create');
     Route::post('/vehicle/{identifier}/store', [WebController::class, 'store'])->name('vehicle.store');
+    
+    // Vehicle Edits
+    Route::get('/vehicle/{vehicle}/edit', [VehicleEditController::class, 'create'])->name('vehicle.edit');
+    Route::post('/vehicle/{vehicle}/update-request', [VehicleEditController::class, 'store'])->name('vehicle.update-request');
     
     // These use model binding which we updated to use UUID
     Route::get('/vehicle/{vehicle}/registered', [WebController::class, 'registered'])->name('vehicle.registered');
@@ -72,6 +79,12 @@ Route::middleware(['auth', 'verified', EnsureIsAdmin::class])->prefix('admin')->
     Route::get('/ratings/{rating}', [AdminRatingController::class, 'show'])->name('ratings.show');
     Route::patch('/ratings/{rating}/approve', [AdminRatingController::class, 'approve'])->name('ratings.approve');
     Route::patch('/ratings/{rating}/reject', [AdminRatingController::class, 'reject'])->name('ratings.reject');
+
+    // Vehicle Edits Management
+    Route::get('/vehicle-edits', [AdminVehicleEditController::class, 'index'])->name('vehicle-edits.index');
+    Route::get('/vehicle-edits/{edit}/document', [AdminVehicleEditController::class, 'downloadDocument'])->name('vehicle-edits.download');
+    Route::patch('/vehicle-edits/{edit}/approve', [AdminVehicleEditController::class, 'approve'])->name('vehicle-edits.approve');
+    Route::patch('/vehicle-edits/{edit}/reject', [AdminVehicleEditController::class, 'reject'])->name('vehicle-edits.reject');
 });
 
 require __DIR__.'/auth.php';

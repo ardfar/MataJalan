@@ -112,9 +112,12 @@
                     </div>
                     <div class="flex justify-between text-xs">
                         <span class="text-slate-500">Target Vehicle</span>
-                        <a href="{{ route('vehicle.show', $rating->vehicle->uuid) }}" class="text-cyan-500 hover:text-cyan-400 font-mono hover:underline">
-                            {{ $rating->vehicle->plate_number }}
-                        </a>
+                        <div class="flex items-center">
+                            <a href="{{ route('vehicle.show', $rating->vehicle->uuid) }}" class="text-cyan-500 hover:text-cyan-400 font-mono hover:underline">
+                                {{ $rating->vehicle->plate_number }}
+                            </a>
+                            <a href="{{ route('vehicle.edit', $rating->vehicle->uuid) }}" class="ml-2 text-xs text-cyan-600 hover:text-cyan-400" title="Edit Vehicle Info">[Edit]</a>
+                        </div>
                     </div>
                 </div>
 
