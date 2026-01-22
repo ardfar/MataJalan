@@ -6,6 +6,7 @@ use App\Models\Rating;
 use App\Models\RatingMedia;
 use App\Models\Vehicle;
 use App\Models\User;
+use App\Models\AuditLog;
 use App\Models\RegistrationFeedback;
 use App\Notifications\NewRatingPending;
 use Illuminate\Http\Request;
@@ -169,7 +170,25 @@ class WebController extends Controller
             $vehicle->setRelation('ratings', $ratingsQuery->get());
         }
 
-        return view('vehicle.show', compact('vehicle', 'plate_number', 'ratings'));
+        // Access Control Logic for Specifications
+        $canViewSpecs = false;
+        if ($vehicle && Auth::check()) {
+            $user = Auth::user();
+            // Check allowed roles: Superadmin, Admin, Tier 1 (Verified)
+            if ($user->isSuperAdmin() || $user->isAdmin() || ($user->hasRole(User::ROLE_TIER_1) && $user->kyc_verified_at)) {
+                $canViewSpecs = true;
+                
+                // Audit Log
+                AuditLog::create([
+                    'user_id' => $user->id,
+                    'action' => 'VIEW_SPECS',
+                    'description' => "Viewed specifications for vehicle {$vehicle->plate_number}",
+                    'ip_address' => request()->ip(),
+                ]);
+            }
+        }
+
+        return view('vehicle.show', compact('vehicle', 'plate_number', 'ratings', 'canViewSpecs'));
     }
 
     public function rate($identifier)

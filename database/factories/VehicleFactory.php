@@ -23,15 +23,27 @@ class VehicleFactory extends Factory
         $suffix = $this->faker->regexify('[A-Z]{2,3}');
         $plate = "$prefix $number $suffix";
 
+        $brands = ['Toyota', 'Honda', 'Mitsubishi', 'Suzuki', 'Hyundai', 'Wuling'];
         $models = [
-            'Toyota Fortuner - Black', 'Mitsubishi Pajero - Black', 'Honda Civic - White', 
-            'Toyota Avanza - Silver', 'Honda Jazz - Red', 'Suzuki Ertiga - Grey', 
-            'Toyota Innova - Black', 'Hyundai Creta - White', 'Wuling AirEV - Blue'
+            'Toyota' => ['Fortuner', 'Avanza', 'Innova', 'Camry'],
+            'Honda' => ['Civic', 'Jazz', 'CR-V', 'Brio'],
+            'Mitsubishi' => ['Pajero Sport', 'Xpander'],
+            'Suzuki' => ['Ertiga', 'Jimny'],
+            'Hyundai' => ['Creta', 'Stargazer', 'Ioniq 5'],
+            'Wuling' => ['AirEV', 'Almaz']
         ];
+        
+        $brand = $this->faker->randomElement($brands);
+        $model = $this->faker->randomElement($models[$brand]);
+        $colors = ['Black', 'White', 'Silver', 'Grey', 'Red', 'Blue'];
 
         return [
             'plate_number' => $plate,
-            'model' => $this->faker->randomElement($models),
+            'make' => $brand,
+            'model' => $model,
+            'year' => $this->faker->numberBetween(2015, 2025),
+            'color' => $this->faker->randomElement($colors),
+            'vin' => strtoupper($this->faker->bothify('???#############')),
         ];
     }
 }

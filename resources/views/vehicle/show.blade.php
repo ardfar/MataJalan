@@ -141,6 +141,125 @@
                             <div id="vehicleMap" class="h-64 w-full bg-slate-900"></div>
                         </div>
 
+                        <!-- Vehicle Specifications Section -->
+                        <div class="mb-8 bg-slate-900 border border-slate-800 rounded-lg overflow-hidden">
+                            <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+                                <h2 class="text-lg font-mono font-bold text-slate-100 flex items-center gap-2">
+                                    <i data-lucide="cpu" class="text-cyan-500"></i>
+                                    VEHICLE_SPECIFICATIONS
+                                </h2>
+                                @if($canViewSpecs)
+                                    <span class="px-2 py-1 bg-emerald-900/30 text-emerald-400 text-[10px] font-mono rounded border border-emerald-500/30">ACCESS_GRANTED</span>
+                                @else
+                                    <span class="px-2 py-1 bg-red-900/30 text-red-400 text-[10px] font-mono rounded border border-red-500/30">RESTRICTED_DATA</span>
+                                @endif
+                            </div>
+
+                            @if($canViewSpecs)
+                                <div class="p-6">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <!-- Core Specs -->
+                                        <div>
+                                            <h3 class="text-xs font-mono text-slate-500 uppercase mb-4 border-b border-slate-800 pb-2">Core Identifiers</h3>
+                                            <dl class="grid grid-cols-2 gap-4 text-sm font-mono">
+                                                <div>
+                                                    <dt class="text-slate-500 text-[10px] uppercase">Manufacturer</dt>
+                                                    <dd class="text-slate-200">{{ $vehicle->make }}</dd>
+                                                </div>
+                                                <div>
+                                                    <dt class="text-slate-500 text-[10px] uppercase">Model</dt>
+                                                    <dd class="text-slate-200">{{ $vehicle->model }}</dd>
+                                                </div>
+                                                <div>
+                                                    <dt class="text-slate-500 text-[10px] uppercase">Year</dt>
+                                                    <dd class="text-slate-200">{{ $vehicle->year }}</dd>
+                                                </div>
+                                                <div>
+                                                    <dt class="text-slate-500 text-[10px] uppercase">Color</dt>
+                                                    <dd class="text-slate-200 flex items-center gap-2">
+                                                        <span class="w-3 h-3 rounded-full border border-slate-600" style="background-color: {{ strtolower($vehicle->color) }}"></span>
+                                                        {{ $vehicle->color }}
+                                                    </dd>
+                                                </div>
+                                                <div class="col-span-2">
+                                                    <dt class="text-slate-500 text-[10px] uppercase">VIN</dt>
+                                                    <dd class="text-slate-200 tracking-wider">{{ $vehicle->vin }}</dd>
+                                                </div>
+                                            </dl>
+                                        </div>
+
+                                        <!-- Technical Specs (Mocked for Demo) -->
+                                        <div>
+                                            <h3 class="text-xs font-mono text-slate-500 uppercase mb-4 border-b border-slate-800 pb-2">Technical Data (System Estimate)</h3>
+                                            <dl class="grid grid-cols-2 gap-4 text-sm font-mono">
+                                                <div>
+                                                    <dt class="text-slate-500 text-[10px] uppercase">Engine</dt>
+                                                    <dd class="text-slate-200">2.0L Inline-4 Turbo</dd>
+                                                </div>
+                                                <div>
+                                                    <dt class="text-slate-500 text-[10px] uppercase">Horsepower</dt>
+                                                    <dd class="text-slate-200">184 hp @ 5000 rpm</dd>
+                                                </div>
+                                                <div>
+                                                    <dt class="text-slate-500 text-[10px] uppercase">Drivetrain</dt>
+                                                    <dd class="text-slate-200">FWD / CVT</dd>
+                                                </div>
+                                                <div>
+                                                    <dt class="text-slate-500 text-[10px] uppercase">Fuel Economy</dt>
+                                                    <dd class="text-slate-200">28 MPG (Combined)</dd>
+                                                </div>
+                                            </dl>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-8">
+                                        <h3 class="text-xs font-mono text-slate-500 uppercase mb-4 border-b border-slate-800 pb-2">Safety & Features</h3>
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                            <div class="bg-slate-950 p-3 rounded border border-slate-800">
+                                                <div class="text-slate-500 text-[10px] uppercase mb-1">Safety Rating</div>
+                                                <div class="flex text-amber-400">
+                                                    <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                                    <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                                    <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                                    <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                                    <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                                </div>
+                                            </div>
+                                            <div class="bg-slate-950 p-3 rounded border border-slate-800">
+                                                <div class="text-slate-500 text-[10px] uppercase mb-1">Airbags</div>
+                                                <div class="text-slate-200 font-mono">8 Standard</div>
+                                            </div>
+                                            <div class="bg-slate-950 p-3 rounded border border-slate-800">
+                                                <div class="text-slate-500 text-[10px] uppercase mb-1">Assistance</div>
+                                                <div class="text-slate-200 font-mono">ABS, EBD, TCS</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @else
+                                <div class="p-8 text-center bg-slate-950/50">
+                                    <div class="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-800">
+                                        <i data-lucide="lock" class="w-8 h-8 text-slate-600"></i>
+                                    </div>
+                                    <h3 class="text-lg font-mono font-bold text-slate-300 mb-2">ACCESS_DENIED</h3>
+                                    <p class="text-sm text-slate-500 font-mono mb-6 max-w-md mx-auto">
+                                        Detailed vehicle specifications are classified. Access is restricted to Tier-1 Verified Users and System Administrators.
+                                    </p>
+                                    @auth
+                                        @if(!Auth::user()->hasRole('tier_1') && !Auth::user()->isAdmin())
+                                            <a href="{{ route('kyc.index') }}" class="inline-flex items-center justify-center px-6 py-2 bg-slate-800 border border-slate-700 text-cyan-400 font-mono font-bold text-xs uppercase tracking-widest hover:bg-slate-700 hover:border-cyan-500 transition-all">
+                                                UPGRADE_CLEARANCE (KYC)
+                                            </a>
+                                        @endif
+                                    @else
+                                        <a href="{{ route('login') }}" class="inline-flex items-center justify-center px-6 py-2 bg-slate-800 border border-slate-700 text-cyan-400 font-mono font-bold text-xs uppercase tracking-widest hover:bg-slate-700 hover:border-cyan-500 transition-all">
+                                            AUTHENTICATE_USER
+                                        </a>
+                                    @endauth
+                                </div>
+                            @endif
+                        </div>
+
                         <div class="border-t border-slate-800 pt-8">
                             <h2 class="text-lg font-mono font-bold text-slate-100 mb-6 flex items-center gap-2">
                                 <i data-lucide="list" class="text-slate-500"></i>
@@ -347,7 +466,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const vehicle = @json($vehicle);
+            // Secure: Do not expose full vehicle object to JS as it contains restricted specs
             const ratings = @json($vehicle ? $vehicle->ratings : []);
             
             // Only init map if there are ratings with location
