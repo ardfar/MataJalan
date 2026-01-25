@@ -96,7 +96,7 @@
             <div class="relative transform overflow-hidden rounded bg-slate-900 border border-slate-800 text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
                 <div class="bg-slate-900 px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
                     <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
-                        <h3 class="text-base font-semibold leading-6 text-slate-100 font-mono">REJECT_ASSOCIATION</h3>
+                        <h3 class="text-base font-semibold leading-6 text-slate-100 font-mono">REJECT_ENTRY</h3>
                         <div class="mt-2">
                             <form id="rejectForm" method="POST">
                                 @csrf

@@ -105,7 +105,7 @@
                                     </a>
                                     <a href="{{ route('vehicle.user.create', $vehicle->uuid) }}" class="inline-flex items-center justify-center px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono font-bold text-xs uppercase tracking-wider transition-all border border-slate-700 hover:border-cyan-500/50">
                                         <i data-lucide="user-plus" class="w-4 h-4 mr-2"></i>
-                                        REGISTER_AS_USER
+                                        ADD_DRIVER_INFO
                                     </a>
                                 @endif
                             @endauth

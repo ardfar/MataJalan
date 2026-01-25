@@ -10,7 +10,7 @@ class VehicleUser extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
+        'registered_by',
         'vehicle_id',
         'role_type',
         'driver_name',
@@ -27,7 +27,7 @@ class VehicleUser extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'registered_by');
     }
 
     public function vehicle()

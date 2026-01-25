@@ -30,7 +30,7 @@ class VehicleDriverAccessTest extends TestCase
 
         // Attach driver to vehicle (Approved)
         $this->vehicleUser = VehicleUser::create([
-            'user_id' => $this->driverUser->id,
+            'registered_by' => $this->driverUser->id,
             'vehicle_id' => $this->vehicle->id,
             'role_type' => 'personal',
             'driver_name' => 'Mr. Chauffeur',
@@ -146,7 +146,7 @@ class VehicleDriverAccessTest extends TestCase
     {
         // Create another driver request that is pending
         $pending = VehicleUser::create([
-            'user_id' => User::factory()->create()->id,
+            'registered_by' => User::factory()->create()->id,
             'vehicle_id' => $this->vehicle->id,
             'role_type' => 'taxi',
             'driver_name' => 'Mr. Pending',

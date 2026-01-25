@@ -1,5 +1,5 @@
 <x-app-layout>
-    @section('title', 'Register Vehicle User | MATAJALAN_OS')
+    @section('title', 'Add Driver Info | MATAJALAN_OS')
 
     <div class="py-12 bg-slate-950 min-h-screen" x-data="vehicleUserForm()">
         <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -8,10 +8,10 @@
             <div class="mb-8 flex items-center justify-between">
                 <div>
                     <h2 class="font-mono text-3xl font-bold text-slate-100 uppercase tracking-tight">
-                        <span class="text-cyan-500">>></span> User Registration Protocol
+                        <span class="text-cyan-500">>></span> Driver Information Protocol
                     </h2>
                     <p class="mt-2 text-slate-400 font-mono text-sm">
-                        Association sequence for Vehicle ID: <span class="text-cyan-400">{{ substr($vehicle->uuid, 0, 8) }}</span>
+                        Driver entry sequence for Vehicle ID: <span class="text-cyan-400">{{ substr($vehicle->uuid, 0, 8) }}</span>
                     </p>
                 </div>
                 <a href="{{ route('vehicle.show', $vehicle->uuid) }}" class="group flex items-center space-x-2 text-slate-400 hover:text-cyan-400 transition-colors duration-300">
@@ -71,6 +71,29 @@
                         <div x-show="step === 2" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-x-4" x-transition:enter-end="opacity-100 translate-x-0" style="display: none;">
                             <h3 class="text-lg font-mono font-bold text-slate-300 mb-6 border-b border-slate-800 pb-2">02 // VERIFICATION_DATA</h3>
                             
+                            <div class="mb-6 p-4 bg-slate-950/50 border border-slate-800 rounded">
+                                <h4 class="text-xs font-mono font-bold text-slate-400 uppercase mb-2">REQUIRED_DOCUMENT_TYPE:</h4>
+                                <template x-if="formData.role_type === 'personal'">
+                                    <p class="text-sm font-mono text-cyan-400">STNK/KTP with license plate visible</p>
+                                </template>
+                                <template x-if="formData.role_type === 'corporate'">
+                                    <p class="text-sm font-mono text-cyan-400">Company ID Card with license plate visible</p>
+                                </template>
+                                <template x-if="formData.role_type === 'taxi'">
+                                    <p class="text-sm font-mono text-cyan-400">License plate & Taxi ID</p>
+                                </template>
+                                <template x-if="formData.role_type === 'e_hauling'">
+                                    <p class="text-sm font-mono text-cyan-400">Screenshot of the booking with License plate visible</p>
+                                </template>
+                                <template x-if="formData.role_type === 'government'">
+                                    <p class="text-sm font-mono text-cyan-400">License plate and ID card</p>
+                                </template>
+                                <p class="text-xs font-mono text-slate-500 mt-3 flex items-center gap-2">
+                                    <i data-lucide="info" class="w-3 h-3"></i>
+                                    If possible, the face of driver might be in the frame
+                                </p>
+                            </div>
+
                             <div class="border-t border-slate-800 pt-6">
                                 <label class="block font-mono font-bold text-xs text-cyan-700 uppercase tracking-wide mb-2">PROOF_OF_ASSOCIATION <span class="text-red-400">*</span></label>
                                 <p class="text-xs text-slate-500 mb-4 font-mono">Upload ownership document, company assignment letter, or valid STNK.</p>
@@ -133,7 +156,7 @@
                             </button>
 
                             <button type="submit" x-show="step === 3" class="inline-flex items-center justify-center px-6 py-2 bg-cyan-600 border border-cyan-500 text-white font-mono font-bold text-xs uppercase tracking-widest hover:bg-cyan-500 transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)]">
-                                SUBMIT_REQUEST
+                                SUBMIT_ENTRY
                             </button>
                         </div>
                     </form>

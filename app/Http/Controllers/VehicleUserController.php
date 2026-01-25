@@ -31,7 +31,7 @@ class VehicleUserController extends Controller
         $path = $request->file('evidence')->store('vehicle-user-evidence', 'private'); // Store securely
 
         $vehicleUser = VehicleUser::create([
-            'user_id' => Auth::id(),
+            'registered_by' => Auth::id(),
             'vehicle_id' => $vehicle->id,
             'role_type' => $request->role_type,
             'driver_name' => $request->driver_name,
@@ -41,13 +41,13 @@ class VehicleUserController extends Controller
 
         AuditLog::create([
             'user_id' => Auth::id(),
-            'action' => 'SUBMIT_VEHICLE_USER',
-            'description' => "Submitted vehicle user request for {$vehicle->plate_number} as {$request->role_type}",
+            'action' => 'SUBMIT_DRIVER_ENTRY',
+            'description' => "Submitted driver entry for {$vehicle->plate_number} as {$request->role_type}",
             'ip_address' => $request->ip(),
         ]);
 
         return redirect()->route('vehicle.show', $vehicle->uuid)
-            ->with('success', 'Vehicle user application submitted successfully. Pending review.');
+            ->with('success', 'Driver information submitted successfully. Pending review.');
     }
 
     // Admin: List pending requests

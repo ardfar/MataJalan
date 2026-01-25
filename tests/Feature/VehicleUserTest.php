@@ -34,7 +34,7 @@ class VehicleUserTest extends TestCase
             ->get(route('vehicle.user.create', $this->vehicle->uuid));
 
         $response->assertStatus(200);
-        $response->assertSee('User Registration Protocol');
+        $response->assertSee('Driver Information Protocol');
     }
 
     /** @test */
@@ -51,7 +51,7 @@ class VehicleUserTest extends TestCase
 
         $response->assertRedirect(route('vehicle.show', $this->vehicle->uuid));
         $this->assertDatabaseHas('vehicle_users', [
-            'user_id' => $this->user->id,
+            'registered_by' => $this->user->id,
             'vehicle_id' => $this->vehicle->id,
             'role_type' => 'personal',
             'driver_name' => 'John Doe',
@@ -67,7 +67,7 @@ class VehicleUserTest extends TestCase
     public function admin_can_list_pending_requests()
     {
         VehicleUser::create([
-            'user_id' => $this->user->id,
+            'registered_by' => $this->user->id,
             'vehicle_id' => $this->vehicle->id,
             'role_type' => 'corporate',
             'driver_name' => 'Jane Smith',
@@ -87,7 +87,7 @@ class VehicleUserTest extends TestCase
     public function admin_can_approve_request()
     {
         $vehicleUser = VehicleUser::create([
-            'user_id' => $this->user->id,
+            'registered_by' => $this->user->id,
             'vehicle_id' => $this->vehicle->id,
             'role_type' => 'taxi',
             'driver_name' => 'Bob Driver',
@@ -115,7 +115,7 @@ class VehicleUserTest extends TestCase
     public function non_admin_cannot_review_requests()
     {
         $vehicleUser = VehicleUser::create([
-            'user_id' => $this->user->id,
+            'registered_by' => $this->user->id,
             'vehicle_id' => $this->vehicle->id,
             'role_type' => 'taxi',
             'driver_name' => 'Bob Driver',
