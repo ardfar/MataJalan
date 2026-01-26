@@ -26,6 +26,9 @@
                         <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                             {{ __('Dashboard') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('my-vehicles.index')" :active="request()->routeIs('my-vehicles.*')">
+                            {{ __('My Vehicles') }}
+                        </x-nav-link>
                         <x-nav-link :href="route('kyc.index')" :active="request()->routeIs('kyc.index')">
                             {{ __('KYC') }}
                         </x-nav-link>
@@ -104,6 +107,9 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('kyc.index')" :active="request()->routeIs('kyc.index')">
                     {{ __('KYC') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('my-vehicles.index')" :active="request()->routeIs('my-vehicles.*')">
+                    {{ __('My Vehicles') }}
                 </x-responsive-nav-link>
                 @if(Auth::user()->isAdmin())
                     <x-responsive-nav-link :href="route('admin.kyc.index')" :active="request()->routeIs('admin.kyc.*')">

@@ -98,4 +98,14 @@ Route::middleware(['auth', 'verified', EnsureIsAdmin::class])->prefix('admin')->
     Route::patch('/vehicle-users/{vehicleUser}/update', [VehicleUserController::class, 'update'])->name('vehicle-users.update');
 });
 
+use App\Http\Controllers\MyVehicleController;
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/my-vehicles', [MyVehicleController::class, 'index'])->name('my-vehicles.index');
+    Route::get('/my-vehicles/add', [MyVehicleController::class, 'create'])->name('my-vehicles.create');
+    Route::post('/my-vehicles/check', [MyVehicleController::class, 'check'])->name('my-vehicles.check');
+    Route::get('/my-vehicles/register/{plate}', [MyVehicleController::class, 'register'])->name('my-vehicles.register');
+    Route::post('/my-vehicles/store', [MyVehicleController::class, 'store'])->name('my-vehicles.store');
+});
+
 require __DIR__.'/auth.php';

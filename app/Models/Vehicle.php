@@ -18,7 +18,8 @@ class Vehicle extends Model
         'model',
         'year',
         'color',
-        'vin'
+        'vin',
+        'owned_by_user_id',
     ];
 
     /**
@@ -51,6 +52,11 @@ class Vehicle extends Model
     public static function normalizePlate($plate)
     {
         return strtoupper(preg_replace('/[^a-zA-Z0-9]/', '', $plate));
+    }
+
+    public function owner()
+    {
+        return $this->belongsTo(User::class, 'owned_by_user_id');
     }
 
     public function ratings()
