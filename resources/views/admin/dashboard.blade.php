@@ -69,6 +69,15 @@
         <div class="text-xs text-slate-500 font-mono uppercase mb-1">Tracked Vehicles</div>
         <div class="text-3xl font-bold text-white font-mono">{{ $stats['total_vehicles'] }}</div>
     </div>
+
+    <div class="bg-slate-900 border border-slate-800 p-4 rounded relative overflow-hidden group">
+        <div class="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+            <i data-lucide="database" class="w-16 h-16 text-cyan-500"></i>
+        </div>
+        <div class="text-xs text-slate-500 font-mono uppercase mb-1">Vehicle Specs</div>
+        <div class="text-3xl font-bold text-white font-mono">{{ $stats['total_specs'] }}</div>
+        <a href="{{ route('admin.vehicle-specs.index') }}" class="mt-2 inline-block text-[10px] text-cyan-400 hover:text-cyan-300 underline">Manage Library &rarr;</a>
+    </div>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">

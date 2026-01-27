@@ -1,11 +1,17 @@
 <?php
 
-use App\Http\Controllers\AdminKycController;
+use App\Http\Controllers\Admin\VehicleEditController as AdminVehicleEditController;
 use App\Http\Controllers\AdminDashboardController;
-use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\AdminKycController;
 use App\Http\Controllers\AdminRatingController;
+use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\AdminVehicleSpecController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KycController;
+use App\Http\Controllers\MyVehicleController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\VehicleEditController;
+use App\Http\Controllers\VehicleUserController;
 use App\Http\Controllers\WebController;
 use App\Http\Middleware\EnsureIsAdmin;
 use App\Http\Middleware\EnsureKycVerified;
@@ -15,10 +21,6 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [WebController::class, 'index'])->name('home');
 Route::post('/search', [WebController::class, 'search'])->name('vehicle.search');
 Route::get('/vehicle/{identifier}', [WebController::class, 'show'])->name('vehicle.show');
-
-use App\Http\Controllers\VehicleEditController;
-use App\Http\Controllers\VehicleUserController;
-use App\Http\Controllers\Admin\VehicleEditController as AdminVehicleEditController;
 
 // Protected Routes (Login required)
 Route::middleware(['auth'])->group(function () {
@@ -42,10 +44,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/vehicle/{vehicle}/registered', [WebController::class, 'registered'])->name('vehicle.registered');
     Route::post('/vehicle/{vehicle}/feedback', [WebController::class, 'storeFeedback'])->name('vehicle.storeFeedback');
 });
-
-use App\Http\Controllers\DashboardController;
-
-// ...
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
@@ -96,9 +94,19 @@ Route::middleware(['auth', 'verified', EnsureIsAdmin::class])->prefix('admin')->
     Route::get('/vehicle-users/{vehicleUser}', [VehicleUserController::class, 'show'])->name('vehicle-users.show');
     Route::get('/vehicle-users/{vehicleUser}/evidence', [VehicleUserController::class, 'downloadEvidence'])->name('vehicle-users.download');
     Route::patch('/vehicle-users/{vehicleUser}/update', [VehicleUserController::class, 'update'])->name('vehicle-users.update');
-});
 
-use App\Http\Controllers\MyVehicleController;
+    // Vehicle Specs Management
+    Route::delete('/vehicle-specs/bulk-delete', [AdminVehicleSpecController::class, 'bulkDestroy'])->name('vehicle-specs.bulk-delete');
+    Route::resource('vehicle-specs', AdminVehicleSpecController::class)
+        ->names([
+            'index' => 'vehicle-specs.index',
+            'create' => 'vehicle-specs.create',
+            'store' => 'vehicle-specs.store',
+            'edit' => 'vehicle-specs.edit',
+            'update' => 'vehicle-specs.update',
+            'destroy' => 'vehicle-specs.destroy',
+        ]);
+});
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/my-vehicles', [MyVehicleController::class, 'index'])->name('my-vehicles.index');

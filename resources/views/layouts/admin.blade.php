@@ -77,6 +77,11 @@
                 @endif
             </a>
 
+            <a href="{{ route('admin.vehicle-specs.index') }}" class="flex items-center gap-3 px-4 py-3 text-xs font-mono rounded hover:bg-slate-800 {{ request()->routeIs('admin.vehicle-specs.*') ? 'bg-slate-800 text-cyan-400 border-l-2 border-cyan-500' : 'text-slate-400 border-l-2 border-transparent' }}">
+                <i data-lucide="database" class="w-4 h-4"></i>
+                SPECIFICATION_LIBRARY
+            </a>
+
             <div class="pt-4 pb-2 px-4 text-[10px] font-mono text-slate-600 uppercase">System</div>
             
             <a href="#" class="flex items-center gap-3 px-4 py-3 text-xs font-mono rounded hover:bg-slate-800 text-slate-400 border-l-2 border-transparent">

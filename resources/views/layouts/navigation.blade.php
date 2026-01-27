@@ -32,9 +32,12 @@
                         <x-nav-link :href="route('kyc.index')" :active="request()->routeIs('kyc.index')">
                             {{ __('KYC') }}
                         </x-nav-link>
-                        @if(Auth::user()->is_admin)
+                        @if(Auth::user()->isAdmin())
                             <x-nav-link :href="route('admin.kyc.index')" :active="request()->routeIs('admin.kyc.*')">
                                 {{ __('Admin KYC') }}
+                            </x-nav-link>
+                            <x-nav-link :href="route('admin.vehicle-specs.index')" :active="request()->routeIs('admin.vehicle-specs.*')">
+                                {{ __('Vehicle Specs') }}
                             </x-nav-link>
                         @endif
                     @endauth
@@ -114,6 +117,9 @@
                 @if(Auth::user()->isAdmin())
                     <x-responsive-nav-link :href="route('admin.kyc.index')" :active="request()->routeIs('admin.kyc.*')">
                         {{ __('Admin KYC') }}
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('admin.vehicle-specs.index')" :active="request()->routeIs('admin.vehicle-specs.*')">
+                        {{ __('Vehicle Specs') }}
                     </x-responsive-nav-link>
                 @endif
             @endauth

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Rating;
 use App\Models\RatingMedia;
 use App\Models\Vehicle;
+use App\Models\VehicleSpec;
 use App\Models\User;
 use App\Models\AuditLog;
 use App\Models\RegistrationFeedback;
@@ -172,12 +173,20 @@ class WebController extends Controller
 
         // Access Control Logic for Specifications
         $canViewSpecs = false;
+        $specs = null;
         if ($vehicle && Auth::check()) {
             $user = Auth::user();
             // Check allowed roles: Superadmin, Admin, Tier 1 (Verified)
             if ($user->isSuperAdmin() || $user->isAdmin() || ($user->hasRole(User::ROLE_TIER_1) && $user->kyc_verified_at)) {
                 $canViewSpecs = true;
                 
+                // Fetch Vehicle Specs if make/model matches
+                if ($vehicle->make && $vehicle->model) {
+                    $specs = VehicleSpec::where('brand', $vehicle->make)
+                        ->where('model', $vehicle->model)
+                        ->get(); // Get all variants
+                }
+
                 // Audit Log
                 AuditLog::create([
                     'user_id' => $user->id,
@@ -188,7 +197,7 @@ class WebController extends Controller
             }
         }
 
-        return view('vehicle.show', compact('vehicle', 'plate_number', 'ratings', 'canViewSpecs'));
+        return view('vehicle.show', compact('vehicle', 'plate_number', 'ratings', 'canViewSpecs', 'specs'));
     }
 
     public function rate($identifier)

@@ -192,26 +192,56 @@
                                             </dl>
                                         </div>
 
-                                        <!-- Technical Specs (Mocked for Demo) -->
+                                        <!-- Technical Specs -->
+                                        @php
+                                            $spec = isset($specs) && $specs->isNotEmpty() ? $specs->first() : null;
+                                        @endphp
                                         <div>
-                                            <h3 class="text-xs font-mono text-slate-500 uppercase mb-4 border-b border-slate-800 pb-2">Technical Data (System Estimate)</h3>
+                                            <h3 class="text-xs font-mono text-slate-500 uppercase mb-4 border-b border-slate-800 pb-2">Technical Data {{ $spec ? '(Matched)' : '(System Estimate)' }}</h3>
                                             <dl class="grid grid-cols-2 gap-4 text-sm font-mono">
-                                                <div>
-                                                    <dt class="text-slate-500 text-[10px] uppercase">Engine</dt>
-                                                    <dd class="text-slate-200">2.0L Inline-4 Turbo</dd>
-                                                </div>
-                                                <div>
-                                                    <dt class="text-slate-500 text-[10px] uppercase">Horsepower</dt>
-                                                    <dd class="text-slate-200">184 hp @ 5000 rpm</dd>
-                                                </div>
-                                                <div>
-                                                    <dt class="text-slate-500 text-[10px] uppercase">Drivetrain</dt>
-                                                    <dd class="text-slate-200">FWD / CVT</dd>
-                                                </div>
-                                                <div>
-                                                    <dt class="text-slate-500 text-[10px] uppercase">Fuel Economy</dt>
-                                                    <dd class="text-slate-200">28 MPG (Combined)</dd>
-                                                </div>
+                                                @if($spec)
+                                                    <div>
+                                                        <dt class="text-slate-500 text-[10px] uppercase">Engine</dt>
+                                                        <dd class="text-slate-200">{{ $spec->engine_cc ? $spec->engine_cc . ' cc' : ($spec->category === 'EV' ? 'Electric Motor' : 'N/A') }}</dd>
+                                                    </div>
+                                                    <div>
+                                                        <dt class="text-slate-500 text-[10px] uppercase">Power / Torque</dt>
+                                                        <dd class="text-slate-200">{{ $spec->horsepower }} PS / {{ $spec->torque }} Nm</dd>
+                                                    </div>
+                                                    <div>
+                                                        <dt class="text-slate-500 text-[10px] uppercase">Transmission</dt>
+                                                        <dd class="text-slate-200">{{ $spec->transmission }}</dd>
+                                                    </div>
+                                                    <div>
+                                                        <dt class="text-slate-500 text-[10px] uppercase">Category</dt>
+                                                        <dd class="text-slate-200">{{ $spec->category }}</dd>
+                                                    </div>
+                                                    <div>
+                                                        <dt class="text-slate-500 text-[10px] uppercase">Fuel Type</dt>
+                                                        <dd class="text-slate-200">{{ $spec->fuel_type }}</dd>
+                                                    </div>
+                                                    <div>
+                                                        <dt class="text-slate-500 text-[10px] uppercase">Capacity</dt>
+                                                        <dd class="text-slate-200">{{ $spec->seat_capacity }} Seats</dd>
+                                                    </div>
+                                                @else
+                                                    <div>
+                                                        <dt class="text-slate-500 text-[10px] uppercase">Engine</dt>
+                                                        <dd class="text-slate-200">2.0L Inline-4 Turbo</dd>
+                                                    </div>
+                                                    <div>
+                                                        <dt class="text-slate-500 text-[10px] uppercase">Horsepower</dt>
+                                                        <dd class="text-slate-200">184 hp @ 5000 rpm</dd>
+                                                    </div>
+                                                    <div>
+                                                        <dt class="text-slate-500 text-[10px] uppercase">Drivetrain</dt>
+                                                        <dd class="text-slate-200">FWD / CVT</dd>
+                                                    </div>
+                                                    <div>
+                                                        <dt class="text-slate-500 text-[10px] uppercase">Fuel Economy</dt>
+                                                        <dd class="text-slate-200">28 MPG (Combined)</dd>
+                                                    </div>
+                                                @endif
                                             </dl>
                                         </div>
                                     </div>
