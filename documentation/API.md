@@ -20,49 +20,78 @@ Get the currently authenticated user.
       "id": 1,
       "name": "Agent 007",
       "email": "agent@matajalan.os",
+      "is_admin": 0,
       "role": "tier_1",
       "kyc_status": "approved",
-      ...
+      "created_at": "...",
+      "updated_at": "..."
   }
   ```
 
 ### 2. List Vehicles
-Retrieve a list of all tracked vehicles.
+Retrieve a paginated list of all tracked vehicles. Supports search by license plate.
 
 - **URL:** `/vehicles`
 - **Method:** `GET`
+- **Query Parameters:**
+  - `page` (int): Page number (default: 1).
+  - `search` (string): Filter by plate number (e.g., "B 1234"). Handles spaces and casing automatically.
 - **Response:**
   ```json
-  [
-      {
-          "id": 1,
-          "uuid": "550e8400-e29b-41d4-a716-446655440000",
-          "plate_number": "B1234XYZ",
-          "model": "Toyota Camry",
-          "created_at": "..."
-      },
-      ...
-  ]
+  {
+      "current_page": 1,
+      "data": [
+          {
+              "id": 1,
+              "plate_number": "B1234XYZ",
+              "model": "Toyota Camry",
+              "ratings_count": 5,
+              "ratings_avg_rating": "4.2",
+              "created_at": "..."
+          },
+          ...
+      ],
+      "first_page_url": "http://localhost/api/vehicles?page=1",
+      "from": 1,
+      "last_page": 10,
+      "last_page_url": "http://localhost/api/vehicles?page=10",
+      "next_page_url": "http://localhost/api/vehicles?page=2",
+      "path": "http://localhost/api/vehicles",
+      "per_page": 20,
+      "prev_page_url": null,
+      "to": 20,
+      "total": 200
+  }
   ```
 
 ### 3. Get Vehicle Details
-Retrieve detailed information about a specific vehicle.
+Retrieve detailed information about a specific vehicle, including recent ratings.
 
-- **URL:** `/vehicles/{identifier}`
+- **URL:** `/vehicles/{plate_number}`
 - **Method:** `GET`
 - **Parameters:**
-    - `identifier` (string): The vehicle UUID (preferred) or license plate (backward compatible).
+    - `plate_number` (string): The vehicle license plate.
 - **Response:**
   ```json
   {
       "id": 1,
-      "uuid": "550e8400-e29b-41d4-a716-446655440000",
       "plate_number": "B1234XYZ",
       "model": "Toyota Camry",
-      "ratings": [ ... ]
+      "ratings_avg_rating": "4.2",
+      "ratings_count": 5,
+      "ratings": [
+          {
+              "id": 101,
+              "rating": 5,
+              "comment": "Safe driver",
+              "user": {
+                  "id": 10,
+                  "name": "John Doe"
+              }
+          }
+      ]
   }
   ```
-  **Note:** The `ratings` list will only include **approved** ratings.
 
 ### 4. Submit Rating
 Submit a new rating/report for a vehicle.
@@ -76,15 +105,12 @@ Submit a new rating/report for a vehicle.
       "plate_number": "B1234XYZ",
       "rating": 1,
       "comment": "Reckless driving on highway.",
-      "tags": ["speeding", "aggressive"],
-      "honesty_declaration": "accepted"
+      "tags": ["speeding", "aggressive"]
   }
   ```
 - **Response:**
   - `201 Created`: Rating submitted successfully.
   - `422 Unprocessable Entity`: Validation error.
-  
-  **Note:** Submitted ratings will have a `pending` status and will not be visible publicly until approved by an administrator.
 
 ## Error Handling
 The API returns standard HTTP status codes:

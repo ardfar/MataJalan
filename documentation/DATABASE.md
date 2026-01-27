@@ -1,34 +1,37 @@
 # Database Schema Documentation
 
 ## Overview
-The database uses a relational model designed to link Users, Vehicles, and Ratings.
+The database uses a relational model designed to link Users, Vehicles, Ratings, and System Logs.
 
 ## Entity-Relationship Diagram (ERD)
 
 ```mermaid
 erDiagram
     User ||--o{ Rating : "submits"
+    User ||--o{ AuditLog : "triggers"
     Vehicle ||--o{ Rating : "receives"
-    User ||--o{ AdminAction : "performs"
-    Rating ||--o{ AdminAction : "target"
     
     User {
         bigint id PK
         string name
         string email
         string password
-        boolean is_admin
-        string kyc_status
-        text kyc_data
+        string role "user, admin, tier_1"
+        boolean is_admin "Legacy flag"
+        string kyc_status "none, pending, approved, rejected"
+        text kyc_data "JSON: document_type, document_path"
+        timestamp kyc_submitted_at
+        timestamp kyc_verified_at
     }
+    
     Vehicle {
         bigint id PK
-        uuid uuid UK
         string plate_number
         string model
         timestamp created_at
         timestamp updated_at
     }
+    
     Rating {
         bigint id PK
         bigint user_id FK
@@ -36,19 +39,15 @@ erDiagram
         int rating
         text comment
         json tags
-        enum status
-        bigint approved_by FK
-        timestamp approved_at
-        text rejection_reason
         timestamp created_at
     }
-    AdminAction {
+    
+    AuditLog {
         bigint id PK
         bigint user_id FK
-        string action_type
-        string target_type
-        bigint target_id
-        json details
+        string action
+        text description
+        string ip_address
         timestamp created_at
     }
 ```
@@ -56,7 +55,7 @@ erDiagram
 ## Tables
 
 ### 1. `users`
-Stores user account information and KYC status.
+Stores user account information, roles, and KYC status.
 
 | Column | Type | Description |
 | :--- | :--- | :--- |
@@ -64,7 +63,8 @@ Stores user account information and KYC status.
 | `name` | STRING | User's full name |
 | `email` | STRING | Unique email address |
 | `password` | STRING | Hashed password |
-| `role` | ENUM | Role: `superadmin`, `admin`, `tier_1`, `tier_2`, `user` |
+| `role` | STRING | Role: `user` (Tier 2), `tier_1` (Verified), `admin` |
+| `is_admin` | BOOLEAN | **Deprecated**: Use `role` instead. |
 | `kyc_status` | STRING | Status: `none`, `pending`, `approved`, `rejected` |
 | `kyc_data` | TEXT | JSON string containing document metadata |
 | `kyc_submitted_at` | TIMESTAMP | When the KYC request was made |
@@ -76,7 +76,6 @@ Stores information about vehicles tracked by the system.
 | Column | Type | Description |
 | :--- | :--- | :--- |
 | `id` | BIGINT | Primary Key |
-| `uuid` | UUID | Unique Universal Identifier (Indexed) |
 | `plate_number` | STRING | Unique license plate (e.g., "B1234XYZ") |
 | `model` | STRING | Vehicle model/make (optional) |
 | `created_at` | TIMESTAMP | Record creation time |
@@ -93,22 +92,16 @@ Stores reports and ratings submitted by users against vehicles.
 | `rating` | INTEGER | Score from 1 (Bad) to 5 (Good) |
 | `comment` | TEXT | Detailed description of the incident |
 | `tags` | JSON | Array of tags (e.g., `["speeding", "safe"]`) |
-| `is_honest` | BOOLEAN | User declaration of truthfulness |
-| `status` | ENUM | `pending` (default), `approved`, `rejected` |
-| `approved_by` | BIGINT | Foreign Key -> `users.id` (Admin who verified) |
-| `approved_at` | TIMESTAMP | When the rating was verified |
-| `rejection_reason` | TEXT | Reason for rejection (if applicable) |
 | `created_at` | TIMESTAMP | When the report was filed |
 
-### 4. `admin_actions`
-Logs administrative actions performed on the platform.
+### 4. `audit_logs`
+System-wide audit trail for sensitive actions (KYC reviews, etc.).
 
 | Column | Type | Description |
 | :--- | :--- | :--- |
 | `id` | BIGINT | Primary Key |
-| `user_id` | BIGINT | Foreign Key -> `users.id` (Admin) |
-| `action_type` | STRING | Type of action (e.g., `approve_rating`, `reject_rating`) |
-| `target_type` | STRING | Polymorphic relation type (e.g., `App\Models\Rating`) |
-| `target_id` | BIGINT | Polymorphic relation ID |
-| `details` | JSON | Additional metadata (e.g., rejection reason) |
-| `created_at` | TIMESTAMP | When the action occurred |
+| `user_id` | BIGINT | Foreign Key -> `users.id` (Who performed the action) |
+| `action` | STRING | Short code (e.g., `kyc_approve`) |
+| `description` | TEXT | Human-readable details |
+| `ip_address` | STRING | IP address of the requester |
+| `created_at` | TIMESTAMP | Time of action |
