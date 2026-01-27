@@ -65,13 +65,14 @@ class AdminVehicleSpecController extends Controller
 
     public function edit(VehicleSpec $vehicleSpec)
     {
-        return view('admin.vehicle-specs.edit', compact('vehicleSpec'));
+        $brands = VehicleSpec::AVAILABLE_BRANDS;
+        return view('admin.vehicle-specs.edit', compact('vehicleSpec', 'brands'));
     }
 
     public function update(Request $request, VehicleSpec $vehicleSpec)
     {
         $request->validate([
-            'brand' => 'required|string|max:50',
+            'brand' => ['required', 'string', Rule::in(VehicleSpec::AVAILABLE_BRANDS)],
             'model' => 'required|string|max:100',
             'variant' => 'required|string|max:100',
             'category' => 'required|in:MPV,SUV,LCGC,Sedan,Hatchback,EV,Commercial',

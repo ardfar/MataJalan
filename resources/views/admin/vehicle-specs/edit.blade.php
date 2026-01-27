@@ -28,11 +28,43 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <!-- Brand -->
-                    <div>
+                    <div x-data="{
+                        search: '{{ old('brand', $vehicleSpec->brand) }}',
+                        open: false,
+                        items: {{ json_encode($brands) }},
+                        get filteredItems() {
+                            if (this.search === '') return this.items;
+                            return this.items.filter(i => i.toLowerCase().includes(this.search.toLowerCase()));
+                        },
+                        select(item) {
+                            this.search = item;
+                            this.open = false;
+                        }
+                    }" class="relative">
                         <label for="brand" class="block font-mono font-bold text-xs text-cyan-700 uppercase tracking-wide mb-2">BRAND / MANUFACTURER</label>
-                        <input type="text" name="brand" id="brand" value="{{ old('brand', $vehicleSpec->brand) }}" required
-                            class="block w-full px-4 py-2 border border-slate-700 rounded bg-slate-950 text-slate-100 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 font-mono text-sm placeholder-slate-700"
-                            placeholder="TOYOTA">
+                        <input type="hidden" name="brand" :value="search">
+                        <div class="relative">
+                            <input type="text" x-model="search" 
+                                @focus="open = true" @click.away="open = false" @keydown.escape="open = false"
+                                class="block w-full px-4 py-2 border border-slate-700 rounded bg-slate-950 text-slate-100 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 font-mono text-sm placeholder-slate-700"
+                                placeholder="Select or Type Brand..." autocomplete="off">
+                            <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                <i data-lucide="chevron-down" class="w-4 h-4 text-slate-500"></i>
+                            </div>
+                        </div>
+                        
+                        <div x-show="open" x-transition 
+                            class="absolute z-10 mt-1 w-full bg-slate-900 border border-slate-700 max-h-60 overflow-auto shadow-lg rounded" 
+                            style="display: none;">
+                            <template x-for="item in filteredItems" :key="item">
+                                <div @click="select(item)" class="px-4 py-2 text-sm font-mono text-slate-300 hover:bg-slate-800 hover:text-cyan-400 cursor-pointer transition-colors">
+                                    <span x-text="item"></span>
+                                </div>
+                            </template>
+                            <div x-show="filteredItems.length === 0" class="px-4 py-2 text-sm font-mono text-slate-500 italic">
+                                No brands found.
+                            </div>
+                        </div>
                         @error('brand') <p class="mt-1 text-xs text-red-400 font-mono">{{ $message }}</p> @enderror
                     </div>
 
