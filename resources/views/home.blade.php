@@ -328,6 +328,17 @@
         const searchInput = document.getElementById('heroSearch');
         const resultsBox = document.getElementById('searchResults');
 
+        // Simple HTML escape function
+        function escapeHtml(unsafe) {
+            if (typeof unsafe !== 'string') return unsafe;
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
         searchInput.addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase();
             if (query.length < 2) {
@@ -344,10 +355,10 @@
                 resultsBox.innerHTML = matches.map(v => `
                     <a href="/vehicle/${v.uuid}" class="block p-3 hover:bg-slate-800 border-b border-slate-800 last:border-0 transition-colors">
                         <div class="flex justify-between items-center">
-                            <span class="font-mono font-bold text-slate-200">${v.plate}</span>
+                            <span class="font-mono font-bold text-slate-200">${escapeHtml(v.plate)}</span>
                             <span class="text-[10px] px-1.5 py-0.5 rounded ${v.threatLevel === 'HIGH' ? 'bg-red-900/30 text-red-400' : 'bg-emerald-900/30 text-emerald-400'}">${v.threatLevel}</span>
                         </div>
-                        <div class="text-xs text-slate-500 uppercase font-mono">${v.model}</div>
+                        <div class="text-xs text-slate-500 uppercase font-mono">${escapeHtml(v.model)}</div>
                     </a>
                 `).join('');
                 resultsBox.classList.remove('hidden');

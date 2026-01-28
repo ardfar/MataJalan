@@ -24,8 +24,6 @@ class AdminDashboardController extends Controller
             'pending_vehicle_users' => VehicleUser::where('status', 'pending')->count(),
         ];
 
-        dd($stats);
-
         // Recent Audit Logs
         $recentLogs = AuditLog::with('user')->latest()->take(5)->get();
 

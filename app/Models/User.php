@@ -43,6 +43,7 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
+        'kyc_data',
     ];
 
     /**
@@ -55,7 +56,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'kyc_data' => 'array',
+            'kyc_data' => 'encrypted:array',
             'kyc_submitted_at' => 'datetime',
             'kyc_verified_at' => 'datetime',
         ];
