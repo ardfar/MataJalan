@@ -55,7 +55,7 @@ class VehicleUserController extends Controller
     {
         $this->authorizeAdmin();
 
-        $pendingRequests = VehicleUser::with(['user', 'vehicle'])
+        $pendingRequests = VehicleUser::with(['user:id,name,email', 'vehicle:id,plate_number,uuid'])
             ->where('status', 'pending')
             ->latest()
             ->paginate(20);

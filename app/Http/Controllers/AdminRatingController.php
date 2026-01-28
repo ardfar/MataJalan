@@ -13,7 +13,7 @@ class AdminRatingController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Rating::query()->with(['user', 'vehicle', 'media']);
+        $query = Rating::query()->with(['user:id,name,email', 'vehicle:id,plate_number,uuid', 'media']);
 
         // Filter by status
         $status = $request->input('status', 'pending');

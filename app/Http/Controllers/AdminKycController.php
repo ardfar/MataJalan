@@ -11,7 +11,9 @@ class AdminKycController extends Controller
 {
     public function index()
     {
-        $pendingUsers = User::where('kyc_status', 'pending')->latest('kyc_submitted_at')->get();
+        $pendingUsers = User::where('kyc_status', 'pending')
+            ->latest('kyc_submitted_at')
+            ->paginate(20);
         return view('admin.kyc.index', compact('pendingUsers'));
     }
 

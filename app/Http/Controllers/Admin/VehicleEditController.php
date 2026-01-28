@@ -12,7 +12,10 @@ class VehicleEditController extends Controller
 {
     public function index()
     {
-        $edits = VehicleEdit::with(['vehicle', 'user'])->where('status', 'pending')->latest()->paginate(10);
+        $edits = VehicleEdit::with(['vehicle:id,plate_number,uuid', 'user:id,name,email'])
+            ->where('status', 'pending')
+            ->latest()
+            ->paginate(10);
         return view('admin.vehicle-edits.index', compact('edits'));
     }
 
