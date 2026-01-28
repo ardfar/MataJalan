@@ -200,6 +200,11 @@ class WebController extends Controller
         return view('vehicle.show', compact('vehicle', 'plate_number', 'ratings', 'canViewSpecs', 'specs'));
     }
 
+    public function tutorial()
+    {
+        return view('tutorial');
+    }
+
     public function rate($identifier)
     {
         if (!Auth::check()) {

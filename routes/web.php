@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Route;
 
 // Public Routes
 Route::get('/', [WebController::class, 'index'])->name('home');
+Route::get('/tutorial', [WebController::class, 'tutorial'])->name('tutorial');
 Route::post('/search', [WebController::class, 'search'])->name('vehicle.search');
 Route::get('/vehicle/{identifier}', [WebController::class, 'show'])->name('vehicle.show');
 
