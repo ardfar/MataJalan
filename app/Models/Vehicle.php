@@ -12,6 +12,7 @@ class Vehicle extends Model
 
     protected $fillable = [
         'uuid',
+        'type',
         'plate_number', 
         'normalized_plate_number',
         'make',

@@ -28,10 +28,26 @@
                         <div x-show="step === 1" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-x-4" x-transition:enter-end="opacity-100 translate-x-0">
                             <h3 class="text-lg font-mono font-bold text-slate-300 mb-6 border-b border-slate-800 pb-2">01 // CORE_ATTRIBUTES</h3>
                             
+                            <!-- Type Selection -->
+                            <div class="mb-6">
+                                <label class="block font-mono font-bold text-xs text-cyan-700 uppercase tracking-wide mb-2">VEHICLE TYPE</label>
+                                <div class="flex space-x-4">
+                                    <label class="inline-flex items-center cursor-pointer bg-slate-950 border border-slate-700 rounded px-4 py-2 hover:border-cyan-500 transition-colors" :class="{'border-cyan-500 bg-slate-900': formData.type === 'car'}">
+                                        <input type="radio" name="type" value="car" x-model="formData.type" class="hidden">
+                                        <i data-lucide="car" class="w-4 h-4 mr-2" :class="formData.type === 'car' ? 'text-cyan-400' : 'text-slate-500'"></i>
+                                        <span class="font-mono text-sm" :class="formData.type === 'car' ? 'text-cyan-400' : 'text-slate-400'">CAR</span>
+                                    </label>
+                                    <label class="inline-flex items-center cursor-pointer bg-slate-950 border border-slate-700 rounded px-4 py-2 hover:border-cyan-500 transition-colors" :class="{'border-cyan-500 bg-slate-900': formData.type === 'motorcycle'}">
+                                        <input type="radio" name="type" value="motorcycle" x-model="formData.type" class="hidden">
+                                        <i data-lucide="bike" class="w-4 h-4 mr-2" :class="formData.type === 'motorcycle' ? 'text-cyan-400' : 'text-slate-500'"></i>
+                                        <span class="font-mono text-sm" :class="formData.type === 'motorcycle' ? 'text-cyan-400' : 'text-slate-400'">MOTORCYCLE</span>
+                                    </label>
+                                </div>
+                            </div>
+
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <!-- Manufacturer Searchable Dropdown -->
                                 <div x-data="dropdownSearch({ 
-                                    options: manufacturers, 
                                     model: 'make', 
                                     placeholder: 'Select Manufacturer' 
                                 })" class="relative">
@@ -45,7 +61,7 @@
                                             @click.away="open = false" 
                                             @keydown.escape="open = false"
                                             class="block w-full px-3 py-2 border border-slate-700 rounded-none bg-slate-950 text-slate-100 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 font-mono text-sm" 
-                                            :placeholder="placeholder"
+                                            placeholder="Search manufacturer"
                                             aria-haspopup="listbox"
                                             :aria-expanded="open">
                                         <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
@@ -57,20 +73,19 @@
                                         class="absolute z-10 mt-1 w-full bg-slate-900 border border-slate-700 max-h-60 overflow-auto shadow-lg" 
                                         role="listbox"
                                         style="display: none;">
-                                        <template x-for="option in filteredOptions" :key="option">
+                                        <template x-for="option in getManufacturers()" :key="option">
                                             <li @click="select(option)" 
                                                 class="px-3 py-2 text-sm font-mono text-slate-300 hover:bg-slate-800 hover:text-cyan-400 cursor-pointer"
                                                 role="option">
                                                 <span x-text="option"></span>
                                             </li>
                                         </template>
-                                        <li x-show="filteredOptions.length === 0" class="px-3 py-2 text-sm font-mono text-slate-500">No matches found</li>
+                                        <li x-show="getManufacturers().length === 0" class="px-3 py-2 text-sm font-mono text-slate-500">No matches found</li>
                                     </ul>
                                 </div>
 
                                 <!-- Model Searchable Dropdown -->
                                 <div x-data="dropdownSearch({ 
-                                    options: [], 
                                     model: 'model', 
                                     placeholder: 'Select Model',
                                     isModel: true 
@@ -85,7 +100,7 @@
                                             @click.away="open = false" 
                                             @keydown.escape="open = false"
                                             class="block w-full px-3 py-2 border border-slate-700 rounded-none bg-slate-950 text-slate-100 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 font-mono text-sm" 
-                                            :placeholder="placeholder"
+                                            placeholder="Search model"
                                             :disabled="!formData.make">
                                         <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                                             <i data-lucide="chevron-down" class="w-4 h-4 text-slate-500"></i>
@@ -135,7 +150,7 @@
                                         </button>
 
                                         <div x-show="open" class="absolute z-10 mt-1 w-full bg-slate-900 border border-slate-700 shadow-lg p-2 grid grid-cols-4 gap-2" style="display: none;">
-                                            <template x-for="color in colors" :key="color.name">
+                                            <template x-for="color in COLORS" :key="color.name">
                                                 <div @click="formData.color = color.name; open = false" 
                                                     class="cursor-pointer hover:bg-slate-800 p-1 rounded text-center group">
                                                     <div class="w-full h-6 border border-slate-700 mb-1" :style="`background-color: ${color.hex}`"></div>
@@ -163,6 +178,10 @@
                                     <div class="sm:col-span-1">
                                         <dt class="text-xs font-medium text-slate-500 uppercase">Target Plate</dt>
                                         <dd class="mt-1 text-slate-200">{{ $plate_number }}</dd>
+                                    </div>
+                                    <div class="sm:col-span-1">
+                                        <dt class="text-xs font-medium text-slate-500 uppercase">Type</dt>
+                                        <dd class="mt-1 text-slate-200 uppercase" x-text="formData.type"></dd>
                                     </div>
                                     <div class="sm:col-span-1">
                                         <dt class="text-xs font-medium text-slate-500 uppercase">Manufacturer</dt>
@@ -221,13 +240,48 @@
 
     <script>
         // Data Definitions
-        const MANUFACTURERS = [
-            'Toyota', 'Honda', 'Daihatsu', 'Mitsubishi', 'Suzuki', 'Hyundai', 
-            'Wuling', 'Nissan', 'Mazda', 'Kia', 'BMW', 'Mercedes-Benz', 
-            'Lexus', 'Isuzu', 'Chery', 'DFSK'
-        ];
+        const CAR_MANUFACTURERS = {!! json_encode($carBrands) !!};
+        const MOTORCYCLE_MANUFACTURERS = {!! json_encode($motorcycleBrands) !!};
 
         const MODELS = {
+            // CARS
+            'Toyota': ['Avanza', 'Veloz', 'Innova Zenix', 'Fortuner', 'Rush', 'Calya', 'Agya', 'Raize', 'Yaris Cross', 'Alphard', 'Voxy', 'Camry', 'Corolla Altis', 'Hilux', 'Hiace'],
+            'Honda': ['Brio', 'HR-V', 'BR-V', 'WR-V', 'CR-V', 'City Hatchback', 'Civic', 'Accord', 'Mobilio', 'Odyssey'],
+            'Daihatsu': ['Sigra', 'Xenia', 'Terios', 'Ayla', 'Rocky', 'Gran Max', 'Luxio', 'Sirion'],
+            'Mitsubishi': ['Xpander', 'Xpander Cross', 'Pajero Sport', 'Xforce', 'Triton', 'L300'],
+            'Suzuki': ['Ertiga', 'XL7', 'Jimny', 'Baleno', 'S-Presso', 'Ignis', 'Grand Vitara', 'Carry'],
+            'Hyundai': ['Stargazer', 'Creta', 'Ioniq 5', 'Palisade', 'Santa Fe', 'Staria', 'Ioniq 6'],
+            'Wuling': ['Confero', 'Almaz', 'Air EV', 'Binguo', 'Cortez', 'Formo'],
+            'Isuzu': ['Panther', 'Mu-X', 'D-Max', 'Traga'],
+            'Nissan': ['Livina', 'Magnite', 'Kicks', 'Serena', 'Terra', 'X-Trail'],
+            'Mazda': ['CX-5', 'CX-3', 'Mazda2', 'Mazda3', 'CX-30', 'CX-60'],
+            'Kia': ['Sonet', 'Seltos', 'Carens', 'Carnival', 'EV6', 'EV9'],
+            'BMW': ['3 Series', '5 Series', 'X1', 'X3', 'X5', 'iX'],
+            'Mercedes-Benz': ['C-Class', 'E-Class', 'GLC', 'GLE', 'A-Class', 'S-Class'],
+            'Chery': ['Tiggo 7 Pro', 'Tiggo 8 Pro', 'Omoda 5'],
+            'DFSK': ['Glory 560', 'Glory i-Auto', 'Gelora'],
+
+            // MOTORCYCLES
+            'Honda_Motor': ['BeAT', 'Vario', 'PCX', 'ADV', 'Scoopy', 'Genio', 'CBR150R', 'CBR250RR', 'CRF150L', 'Supra GTR', 'Revo'],
+            'Yamaha': ['NMAX', 'Aerox', 'XMAX', 'Fazzio', 'Grand Filano', 'Mio M3', 'R15', 'R25', 'MT-15', 'XSR 155', 'WR155R'],
+            'Suzuki_Motor': ['Satria F150', 'GSX-R150', 'Address', 'Nex II', 'Burgman Street', 'V-Strom'],
+            'Kawasaki': ['Ninja ZX-25R', 'Ninja 250', 'KLX 150', 'KLX 250', 'W175', 'Versys-X'],
+            'Vespa': ['Sprint', 'Primavera', 'LX', 'GTS', 'Elettrica'],
+            'TVS': ['Callisto', 'Ntorq', 'Ronin'],
+            'Alva': ['One', 'Cervo'],
+            'United': ['T1800', 'TX3000']
+        };
+
+        // Mapping for shared brand names (if any)
+        // Since we have separate lists, we can handle duplicates or just check both.
+        // But keys in MODELS must match the selected manufacturer.
+        // Honda exists in both. I should differentiate or merge.
+        // In the dropdown, the value is "Honda".
+        // I will merge them or split. 
+        // Better: The dropdown sends "Honda". MODELS['Honda'] currently returns Cars.
+        // I need to dynamically switch MODELS based on type.
+        
+        const CAR_MODELS = {
             'Toyota': ['Avanza', 'Veloz', 'Innova Zenix', 'Fortuner', 'Rush', 'Calya', 'Agya', 'Raize', 'Yaris Cross', 'Alphard', 'Voxy', 'Camry', 'Corolla Altis', 'Hilux', 'Hiace'],
             'Honda': ['Brio', 'HR-V', 'BR-V', 'WR-V', 'CR-V', 'City Hatchback', 'Civic', 'Accord', 'Mobilio', 'Odyssey'],
             'Daihatsu': ['Sigra', 'Xenia', 'Terios', 'Ayla', 'Rocky', 'Gran Max', 'Luxio', 'Sirion'],
@@ -243,6 +297,17 @@
             'Mercedes-Benz': ['C-Class', 'E-Class', 'GLC', 'GLE', 'A-Class', 'S-Class'],
             'Chery': ['Tiggo 7 Pro', 'Tiggo 8 Pro', 'Omoda 5'],
             'DFSK': ['Glory 560', 'Glory i-Auto', 'Gelora']
+        };
+
+        const MOTORCYCLE_MODELS = {
+            'Honda': ['BeAT', 'Vario', 'PCX', 'ADV', 'Scoopy', 'Genio', 'CBR150R', 'CBR250RR', 'CRF150L', 'Supra GTR', 'Revo'],
+            'Yamaha': ['NMAX', 'Aerox', 'XMAX', 'Fazzio', 'Grand Filano', 'Mio M3', 'R15', 'R25', 'MT-15', 'XSR 155', 'WR155R'],
+            'Suzuki': ['Satria F150', 'GSX-R150', 'Address', 'Nex II', 'Burgman Street', 'V-Strom'],
+            'Kawasaki': ['Ninja ZX-25R', 'Ninja 250', 'KLX 150', 'KLX 250', 'W175', 'Versys-X'],
+            'Vespa': ['Sprint', 'Primavera', 'LX', 'GTS', 'Elettrica'],
+            'TVS': ['Callisto', 'Ntorq', 'Ronin'],
+            'Alva': ['One', 'Cervo'],
+            'United': ['T1800', 'TX3000']
         };
 
         const COLORS = [
@@ -263,29 +328,38 @@
         function registrationForm() {
             return {
                 step: 1,
+                colorOpen: false,
                 formData: {
+                    type: 'car',
                     make: '',
                     model: '',
                     year: '',
                     color: '',
                     vin: ''
                 },
-                manufacturers: MANUFACTURERS,
-                colors: COLORS,
                 
                 init() {
                     const saved = localStorage.getItem('vehicle_reg_{{ $plate_number }}');
                     if (saved) {
                         this.formData = JSON.parse(saved);
+                        // Ensure type is set if loading from old data
+                        if (!this.formData.type) this.formData.type = 'car';
                     }
                     this.$watch('formData', (value) => {
                         localStorage.setItem('vehicle_reg_{{ $plate_number }}', JSON.stringify(value));
                     }, { deep: true });
+                    
+                    // Reset make/model if type changes
+                    this.$watch('formData.type', (val) => {
+                        // Optional: clear make/model on type switch to avoid mismatch
+                        // this.formData.make = '';
+                        // this.formData.model = '';
+                    });
                 },
 
                 // --- Helper for Colors ---
                 getColorHex(name) {
-                    const c = this.colors.find(x => x.name === name);
+                    const c = COLORS.find(x => x.name === name);
                     return c ? c.hex : '#333';
                 },
 
@@ -298,7 +372,7 @@
                         }
                     }
                     if (this.step === 2) {
-                        if (!this.formData.year || !this.formData.color || !this.formData.vin) {
+                        if (!this.formData.year || !this.formData.color) {
                             alert('All fields are required.');
                             return false;
                         }
@@ -318,10 +392,9 @@
 
         // --- Reusable Dropdown Search Component ---
         document.addEventListener('alpine:init', () => {
-            Alpine.data('dropdownSearch', ({ options, model, placeholder, isModel = false }) => ({
+            Alpine.data('dropdownSearch', ({ model, placeholder, isModel = false }) => ({
                 open: false,
                 search: '',
-                options: options,
                 
                 init() {
                     // Sync initial value
@@ -342,22 +415,32 @@
                     }
                 },
 
-                get filteredOptions() {
-                    if (this.search === '') return this.options;
-                    return this.options.filter(opt => 
-                        opt.toLowerCase().includes(this.search.toLowerCase())
-                    );
+                getManufacturers() {
+                     if (this.formData.type === 'car') return CAR_MANUFACTURERS;
+                     return MOTORCYCLE_MANUFACTURERS;
                 },
 
                 getModels() {
                     if (!isModel) return [];
                     const make = this.formData.make;
-                    if (!make || !MODELS[make]) return [];
-                    const list = MODELS[make];
+                    let list = [];
+                    
+                    if (this.formData.type === 'car') {
+                        if (make && CAR_MODELS[make]) list = CAR_MODELS[make];
+                    } else {
+                        if (make && MOTORCYCLE_MODELS[make]) list = MOTORCYCLE_MODELS[make];
+                    }
+                    
                     if (this.search === '') return list;
                     return list.filter(opt => 
                         opt.toLowerCase().includes(this.search.toLowerCase())
                     );
+                },
+                
+                // Helper to switch context
+                get filteredOptions() {
+                     // Not used, we use getManufacturers or getModels directly in template
+                     return [];
                 },
 
                 select(option) {

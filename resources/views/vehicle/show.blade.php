@@ -167,6 +167,10 @@
                                             <h3 class="text-xs font-mono text-slate-500 uppercase mb-4 border-b border-slate-800 pb-2">Core Identifiers</h3>
                                             <dl class="grid grid-cols-2 gap-4 text-sm font-mono">
                                                 <div>
+                                                    <dt class="text-slate-500 text-[10px] uppercase">Type</dt>
+                                                    <dd class="text-slate-200 uppercase">{{ $vehicle->type ?? 'Car' }}</dd>
+                                                </div>
+                                                <div>
                                                     <dt class="text-slate-500 text-[10px] uppercase">Manufacturer</dt>
                                                     <dd class="text-slate-200">{{ $vehicle->make }}</dd>
                                                 </div>

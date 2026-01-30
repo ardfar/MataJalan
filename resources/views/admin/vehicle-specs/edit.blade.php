@@ -13,7 +13,20 @@
         </a>
     </div>
 
-    <div class="bg-slate-900 overflow-hidden shadow-lg sm:rounded-lg border border-slate-800">
+    <div class="bg-slate-900 overflow-hidden shadow-lg sm:rounded-lg border border-slate-800"
+         x-data="{
+             type: '{{ old('type', $vehicleSpec->type) }}',
+             carBrands: {!! json_encode($carBrands) !!},
+             motorcycleBrands: {!! json_encode($motorcycleBrands) !!},
+             carCategories: {!! json_encode($carCategories) !!},
+             motorcycleCategories: {!! json_encode($motorcycleCategories) !!},
+             get currentBrands() {
+                 return this.type === 'car' ? this.carBrands : this.motorcycleBrands;
+             },
+             get currentCategories() {
+                 return this.type === 'car' ? this.carCategories : this.motorcycleCategories;
+             }
+         }">
         <div class="p-8">
             <div class="mb-8 border-b border-slate-800 pb-6">
                 <h2 class="text-xl font-mono font-bold text-slate-100 mb-2">UPDATE_TECHNICAL_DATA</h2>
@@ -26,15 +39,30 @@
                 @csrf
                 @method('PUT')
 
+                <!-- Type Selection -->
+                <div class="mb-6">
+                    <label class="block font-mono font-bold text-xs text-cyan-700 uppercase tracking-wide mb-2">VEHICLE TYPE</label>
+                    <div class="flex space-x-4">
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="radio" name="type" value="car" x-model="type" class="form-radio text-cyan-600 bg-slate-950 border-slate-700 focus:ring-cyan-500">
+                            <span class="ml-2 text-slate-300 font-mono text-sm">CAR</span>
+                        </label>
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="radio" name="type" value="motorcycle" x-model="type" class="form-radio text-cyan-600 bg-slate-950 border-slate-700 focus:ring-cyan-500">
+                            <span class="ml-2 text-slate-300 font-mono text-sm">MOTORCYCLE</span>
+                        </label>
+                    </div>
+                    @error('type') <p class="mt-1 text-xs text-red-400 font-mono">{{ $message }}</p> @enderror
+                </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <!-- Brand -->
                     <div x-data="{
                         search: '{{ old('brand', $vehicleSpec->brand) }}',
                         open: false,
-                        items: {{ json_encode($brands) }},
                         get filteredItems() {
-                            if (this.search === '') return this.items;
-                            return this.items.filter(i => i.toLowerCase().includes(this.search.toLowerCase()));
+                            if (this.search === '') return currentBrands;
+                            return currentBrands.filter(i => i.toLowerCase().includes(this.search.toLowerCase()));
                         },
                         select(item) {
                             this.search = item;
@@ -73,7 +101,7 @@
                         <label for="model" class="block font-mono font-bold text-xs text-cyan-700 uppercase tracking-wide mb-2">MODEL NAME</label>
                         <input type="text" name="model" id="model" value="{{ old('model', $vehicleSpec->model) }}" required
                             class="block w-full px-4 py-2 border border-slate-700 rounded bg-slate-950 text-slate-100 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 font-mono text-sm placeholder-slate-700"
-                            placeholder="AVANZA">
+                            placeholder="AVANZA / VARIO">
                         @error('model') <p class="mt-1 text-xs text-red-400 font-mono">{{ $message }}</p> @enderror
                     </div>
 
@@ -82,7 +110,7 @@
                         <label for="variant" class="block font-mono font-bold text-xs text-cyan-700 uppercase tracking-wide mb-2">VARIANT TRIM</label>
                         <input type="text" name="variant" id="variant" value="{{ old('variant', $vehicleSpec->variant) }}" required
                             class="block w-full px-4 py-2 border border-slate-700 rounded bg-slate-950 text-slate-100 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 font-mono text-sm placeholder-slate-700"
-                            placeholder="1.5 G CVT TSS">
+                            placeholder="1.5 G CVT TSS / 160 CBS">
                         @error('variant') <p class="mt-1 text-xs text-red-400 font-mono">{{ $message }}</p> @enderror
                     </div>
 
@@ -91,9 +119,9 @@
                         <label for="category" class="block font-mono font-bold text-xs text-cyan-700 uppercase tracking-wide mb-2">CATEGORY</label>
                         <select name="category" id="category" required class="block w-full px-4 py-2 border border-slate-700 rounded bg-slate-950 text-slate-100 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 font-mono text-sm">
                             <option value="">SELECT CATEGORY</option>
-                            @foreach(['MPV', 'SUV', 'LCGC', 'Sedan', 'Hatchback', 'EV', 'Commercial'] as $cat)
-                                <option value="{{ $cat }}" {{ old('category', $vehicleSpec->category) == $cat ? 'selected' : '' }}>{{ $cat }}</option>
-                            @endforeach
+                            <template x-for="cat in currentCategories" :key="cat">
+                                <option :value="cat" x-text="cat" :selected="'{{ old('category', $vehicleSpec->category) }}' === cat"></option>
+                            </template>
                         </select>
                         @error('category') <p class="mt-1 text-xs text-red-400 font-mono">{{ $message }}</p> @enderror
                     </div>

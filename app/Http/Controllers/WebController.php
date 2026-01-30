@@ -30,17 +30,21 @@ class WebController extends Controller
             ->take(100) // Limit for performance in demo
             ->get();
 
+        // Prefetch specs to avoid N+1
+        $specs = VehicleSpec::all()->groupBy(function($item) {
+            return strtolower($item->brand . '|' . $item->model);
+        });
+
         // 2. Process data for View (calculate threat, score, etc.)
-        $processedVehicles = $allVehicles->map(function ($vehicle) {
+        $processedVehicles = $allVehicles->map(function ($vehicle) use ($specs) {
             $avgRating = $vehicle->ratings_avg_rating ? floatval($vehicle->ratings_avg_rating) : 0;
-            $score = round($avgRating * 20); // 0-100
             
-            // Threat Logic
-            $threatLevel = 'LOW';
-            if ($vehicle->ratings_count > 0) {
-                if ($avgRating < 2.5) $threatLevel = 'HIGH';
-                elseif ($avgRating < 4.0) $threatLevel = 'MEDIUM';
-                }
+            // Find spec
+            $specKey = strtolower($vehicle->make . '|' . $vehicle->model);
+            $spec = $specs->get($specKey)?->first();
+
+            $score = $this->calculateScore($avgRating, $vehicle, $spec);
+            $threatLevel = $this->calculateThreatLevel($avgRating, $vehicle->ratings_count, $vehicle, $spec);
 
             // Mock Data
             $location = $vehicle->location ?? ['Jl. Jend. Sudirman', 'Tol Dalam Kota', 'Simpang Lima'][rand(0,2)];
@@ -51,6 +55,7 @@ class WebController extends Controller
                 'uuid' => $vehicle->uuid,
                 'plate' => $vehicle->plate_number,
                 'model' => $vehicle->model ?? 'Unknown Model',
+                'type' => $vehicle->type ?? 'car',
                 'score' => $score,
                 'threatLevel' => $threatLevel,
                 'lastSeen' => $vehicle->updated_at->diffForHumans(),
@@ -95,6 +100,48 @@ class WebController extends Controller
                 'activity' => $activityData
             ]
         ]);
+    }
+
+    private function calculateScore($avgRating, $vehicle, $spec = null)
+    {
+        $baseScore = round($avgRating * 20); // 0-100
+
+        // Adjust score based on vehicle characteristics (Requirement 5)
+        if ($vehicle->type === 'motorcycle' && $spec) {
+            // Lower score slightly for high performance bikes if rating is low (amplifying bad behavior)
+            if ($avgRating < 3.0) {
+                if ($spec->engine_cc > 250 || $spec->category === 'Sport') {
+                    $baseScore = max(0, $baseScore - 10);
+                }
+            }
+        }
+
+        return $baseScore;
+    }
+
+    private function calculateThreatLevel($avgRating, $ratingCount, $vehicle, $spec = null)
+    {
+        if ($ratingCount === 0) return 'LOW';
+
+        $threatLevel = 'LOW';
+        
+        // Base Thresholds
+        $highThreshold = 2.5;
+        $mediumThreshold = 4.0;
+
+        // Dynamic Thresholds for Motorcycles (Requirement 5)
+        if ($vehicle->type === 'motorcycle' && $spec) {
+            // High performance bikes are considered higher threat if rating is low
+            if ($spec->engine_cc > 250 || $spec->category === 'Sport') {
+                $highThreshold = 3.0; // Stricter: < 3.0 is HIGH
+                $mediumThreshold = 4.5; // Stricter: < 4.5 is MEDIUM
+            }
+        }
+
+        if ($avgRating < $highThreshold) $threatLevel = 'HIGH';
+        elseif ($avgRating < $mediumThreshold) $threatLevel = 'MEDIUM';
+
+        return $threatLevel;
     }
 
     public function search(Request $request)
@@ -314,22 +361,27 @@ class WebController extends Controller
              }
         }
 
-        return view('vehicle.create', compact('plate_number'));
+        $carBrands = VehicleSpec::AVAILABLE_CAR_BRANDS;
+        $motorcycleBrands = VehicleSpec::AVAILABLE_MOTORCYCLE_BRANDS;
+
+        return view('vehicle.create', compact('plate_number', 'carBrands', 'motorcycleBrands'));
     }
 
     public function store(Request $request, $identifier)
     {
         $request->validate([
+            'type' => 'required|in:car,motorcycle',
             'make' => 'required|string',
             'model' => 'required|string',
             'year' => 'required|integer|min:1900|max:'.(date('Y')+1),
             'color' => 'required|string',
-            'vin' => 'required|string|unique:vehicles,vin',
+            'vin' => 'nullable|string|unique:vehicles,vin',
         ]);
 
         // $identifier is plate_number
         $vehicle = Vehicle::create([
             'plate_number' => $identifier,
+            'type' => $request->type,
             'make' => $request->make,
             'model' => $request->model,
             'year' => $request->year,

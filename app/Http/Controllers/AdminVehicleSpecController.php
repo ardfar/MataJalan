@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\VehicleSpec;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class AdminVehicleSpecController extends Controller
 {
@@ -19,6 +20,11 @@ class AdminVehicleSpecController extends Controller
                   ->orWhere('model', 'like', "%{$search}%")
                   ->orWhere('variant', 'like', "%{$search}%");
             });
+        }
+
+        // Filter by Type
+        if ($request->has('type') && $request->type) {
+            $query->where('type', $request->type);
         }
 
         // Filter by Category
@@ -38,16 +44,24 @@ class AdminVehicleSpecController extends Controller
 
     public function create()
     {
-        return view('admin.vehicle-specs.create');
+        $carBrands = VehicleSpec::AVAILABLE_CAR_BRANDS;
+        $motorcycleBrands = VehicleSpec::AVAILABLE_MOTORCYCLE_BRANDS;
+        $carCategories = VehicleSpec::CAR_CATEGORIES;
+        $motorcycleCategories = VehicleSpec::MOTORCYCLE_CATEGORIES;
+
+        return view('admin.vehicle-specs.create', compact(
+            'carBrands', 'motorcycleBrands', 'carCategories', 'motorcycleCategories'
+        ));
     }
 
     public function store(Request $request)
     {
         $request->validate([
+            'type' => 'required|in:car,motorcycle',
             'brand' => 'required|string|max:50',
             'model' => 'required|string|max:100',
             'variant' => 'required|string|max:100',
-            'category' => 'required|in:MPV,SUV,LCGC,Sedan,Hatchback,EV,Commercial',
+            'category' => 'required|string|max:50',
             'engine_cc' => 'nullable|integer',
             'battery_kwh' => 'nullable|numeric',
             'horsepower' => 'required|integer',
@@ -65,17 +79,27 @@ class AdminVehicleSpecController extends Controller
 
     public function edit(VehicleSpec $vehicleSpec)
     {
-        $brands = VehicleSpec::AVAILABLE_BRANDS;
-        return view('admin.vehicle-specs.edit', compact('vehicleSpec', 'brands'));
+        $carBrands = VehicleSpec::AVAILABLE_CAR_BRANDS;
+        $motorcycleBrands = VehicleSpec::AVAILABLE_MOTORCYCLE_BRANDS;
+        $carCategories = VehicleSpec::CAR_CATEGORIES;
+        $motorcycleCategories = VehicleSpec::MOTORCYCLE_CATEGORIES;
+
+        // Get brands based on type, or all if not set
+        $brands = VehicleSpec::getAvailableBrands($vehicleSpec->type);
+        
+        return view('admin.vehicle-specs.edit', compact(
+            'vehicleSpec', 'brands', 'carBrands', 'motorcycleBrands', 'carCategories', 'motorcycleCategories'
+        ));
     }
 
     public function update(Request $request, VehicleSpec $vehicleSpec)
     {
         $request->validate([
-            'brand' => ['required', 'string', Rule::in(VehicleSpec::AVAILABLE_BRANDS)],
+            'type' => 'required|in:car,motorcycle',
+            'brand' => 'required|string|max:50',
             'model' => 'required|string|max:100',
             'variant' => 'required|string|max:100',
-            'category' => 'required|in:MPV,SUV,LCGC,Sedan,Hatchback,EV,Commercial',
+            'category' => 'required|string|max:50',
             'engine_cc' => 'nullable|integer',
             'battery_kwh' => 'nullable|numeric',
             'horsepower' => 'required|integer',
