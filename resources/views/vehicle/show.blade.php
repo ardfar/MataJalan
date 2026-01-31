@@ -228,6 +228,16 @@
                                                         <dt class="text-slate-500 text-[10px] uppercase">Capacity</dt>
                                                         <dd class="text-slate-200">{{ $spec->seat_capacity }} Seats</dd>
                                                     </div>
+                                                    @if($spec->type === 'truck' || $spec->type === 'bus')
+                                                        <div>
+                                                            <dt class="text-slate-500 text-[10px] uppercase">Cargo / GVWR</dt>
+                                                            <dd class="text-slate-200">{{ $spec->cargo_capacity_kg ? number_format($spec->cargo_capacity_kg).' kg' : 'N/A' }} / {{ $spec->gvwr_kg ? number_format($spec->gvwr_kg).' kg' : 'N/A' }}</dd>
+                                                        </div>
+                                                        <div>
+                                                            <dt class="text-slate-500 text-[10px] uppercase">Axles</dt>
+                                                            <dd class="text-slate-200">{{ $spec->axle_count ?? 'N/A' }}</dd>
+                                                        </div>
+                                                    @endif
                                                 @else
                                                     <div>
                                                         <dt class="text-slate-500 text-[10px] uppercase">Engine</dt>

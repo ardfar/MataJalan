@@ -42,6 +42,16 @@
                                         <i data-lucide="bike" class="w-4 h-4 mr-2" :class="formData.type === 'motorcycle' ? 'text-cyan-400' : 'text-slate-500'"></i>
                                         <span class="font-mono text-sm" :class="formData.type === 'motorcycle' ? 'text-cyan-400' : 'text-slate-400'">MOTORCYCLE</span>
                                     </label>
+                                    <label class="inline-flex items-center cursor-pointer bg-slate-950 border border-slate-700 rounded px-4 py-2 hover:border-cyan-500 transition-colors" :class="{'border-cyan-500 bg-slate-900': formData.type === 'truck'}">
+                                        <input type="radio" name="type" value="truck" x-model="formData.type" class="hidden">
+                                        <i data-lucide="truck" class="w-4 h-4 mr-2" :class="formData.type === 'truck' ? 'text-cyan-400' : 'text-slate-500'"></i>
+                                        <span class="font-mono text-sm" :class="formData.type === 'truck' ? 'text-cyan-400' : 'text-slate-400'">TRUCK</span>
+                                    </label>
+                                    <label class="inline-flex items-center cursor-pointer bg-slate-950 border border-slate-700 rounded px-4 py-2 hover:border-cyan-500 transition-colors" :class="{'border-cyan-500 bg-slate-900': formData.type === 'bus'}">
+                                        <input type="radio" name="type" value="bus" x-model="formData.type" class="hidden">
+                                        <i data-lucide="bus" class="w-4 h-4 mr-2" :class="formData.type === 'bus' ? 'text-cyan-400' : 'text-slate-500'"></i>
+                                        <span class="font-mono text-sm" :class="formData.type === 'bus' ? 'text-cyan-400' : 'text-slate-400'">BUS</span>
+                                    </label>
                                 </div>
                             </div>
 
@@ -242,6 +252,7 @@
         // Data Definitions
         const CAR_MANUFACTURERS = {!! json_encode($carBrands) !!};
         const MOTORCYCLE_MANUFACTURERS = {!! json_encode($motorcycleBrands) !!};
+        const COMMERCIAL_MANUFACTURERS = {!! json_encode($commercialBrands) !!};
 
         const MODELS = {
             // CARS
@@ -308,6 +319,19 @@
             'TVS': ['Callisto', 'Ntorq', 'Ronin'],
             'Alva': ['One', 'Cervo'],
             'United': ['T1800', 'TX3000']
+        };
+
+        const COMMERCIAL_MODELS = {
+            'Mitsubishi Fuso': ['Canter', 'Fighter X', 'Canter Bus'],
+            'Hino': ['300 Series', '500 Series', 'R 260', 'RM 280'],
+            'Isuzu': ['Elf', 'Giga', 'Elf Microbus'],
+            'UD Trucks': ['Quester'],
+            'Mercedes-Benz': ['Axor', 'OH 1626', 'OC 500 RF'],
+            'Scania': ['P360', 'K410IB'],
+            'Volvo': ['FM', 'FH', 'B11R', 'B8R'], // Added common Volvo models
+            'FAW': ['J6P', 'JH6'], // Added common FAW models
+            'Tata': ['Prima', 'Ultra'], // Added common Tata models
+            'MAN': ['TGS', 'TGX', 'R37'] // Added common MAN models
         };
 
         const COLORS = [
@@ -417,7 +441,8 @@
 
                 getManufacturers() {
                      if (this.formData.type === 'car') return CAR_MANUFACTURERS;
-                     return MOTORCYCLE_MANUFACTURERS;
+                     if (this.formData.type === 'motorcycle') return MOTORCYCLE_MANUFACTURERS;
+                     return COMMERCIAL_MANUFACTURERS;
                 },
 
                 getModels() {
@@ -427,8 +452,11 @@
                     
                     if (this.formData.type === 'car') {
                         if (make && CAR_MODELS[make]) list = CAR_MODELS[make];
-                    } else {
+                    } else if (this.formData.type === 'motorcycle') {
                         if (make && MOTORCYCLE_MODELS[make]) list = MOTORCYCLE_MODELS[make];
+                    } else {
+                        // Commercial (Truck/Bus)
+                        if (make && COMMERCIAL_MODELS[make]) list = COMMERCIAL_MODELS[make];
                     }
                     
                     if (this.search === '') return list;

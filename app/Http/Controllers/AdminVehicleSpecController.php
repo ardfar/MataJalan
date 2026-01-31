@@ -46,18 +46,22 @@ class AdminVehicleSpecController extends Controller
     {
         $carBrands = VehicleSpec::AVAILABLE_CAR_BRANDS;
         $motorcycleBrands = VehicleSpec::AVAILABLE_MOTORCYCLE_BRANDS;
+        $commercialBrands = VehicleSpec::AVAILABLE_COMMERCIAL_BRANDS;
         $carCategories = VehicleSpec::CAR_CATEGORIES;
         $motorcycleCategories = VehicleSpec::MOTORCYCLE_CATEGORIES;
+        $truckCategories = VehicleSpec::TRUCK_CATEGORIES;
+        $busCategories = VehicleSpec::BUS_CATEGORIES;
 
         return view('admin.vehicle-specs.create', compact(
-            'carBrands', 'motorcycleBrands', 'carCategories', 'motorcycleCategories'
+            'carBrands', 'motorcycleBrands', 'commercialBrands', 
+            'carCategories', 'motorcycleCategories', 'truckCategories', 'busCategories'
         ));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'type' => 'required|in:car,motorcycle',
+            'type' => 'required|in:car,motorcycle,truck,bus',
             'brand' => 'required|string|max:50',
             'model' => 'required|string|max:100',
             'variant' => 'required|string|max:100',
@@ -69,6 +73,9 @@ class AdminVehicleSpecController extends Controller
             'transmission' => 'required|string|max:50',
             'fuel_type' => 'required|string|max:50',
             'seat_capacity' => 'required|integer',
+            'cargo_capacity_kg' => 'nullable|integer',
+            'gvwr_kg' => 'nullable|integer',
+            'axle_count' => 'nullable|integer',
         ]);
 
         VehicleSpec::create($request->all());
@@ -81,21 +88,25 @@ class AdminVehicleSpecController extends Controller
     {
         $carBrands = VehicleSpec::AVAILABLE_CAR_BRANDS;
         $motorcycleBrands = VehicleSpec::AVAILABLE_MOTORCYCLE_BRANDS;
+        $commercialBrands = VehicleSpec::AVAILABLE_COMMERCIAL_BRANDS;
         $carCategories = VehicleSpec::CAR_CATEGORIES;
         $motorcycleCategories = VehicleSpec::MOTORCYCLE_CATEGORIES;
+        $truckCategories = VehicleSpec::TRUCK_CATEGORIES;
+        $busCategories = VehicleSpec::BUS_CATEGORIES;
 
         // Get brands based on type, or all if not set
         $brands = VehicleSpec::getAvailableBrands($vehicleSpec->type);
         
         return view('admin.vehicle-specs.edit', compact(
-            'vehicleSpec', 'brands', 'carBrands', 'motorcycleBrands', 'carCategories', 'motorcycleCategories'
+            'vehicleSpec', 'brands', 'carBrands', 'motorcycleBrands', 'commercialBrands',
+            'carCategories', 'motorcycleCategories', 'truckCategories', 'busCategories'
         ));
     }
 
     public function update(Request $request, VehicleSpec $vehicleSpec)
     {
         $request->validate([
-            'type' => 'required|in:car,motorcycle',
+            'type' => 'required|in:car,motorcycle,truck,bus',
             'brand' => 'required|string|max:50',
             'model' => 'required|string|max:100',
             'variant' => 'required|string|max:100',
@@ -107,6 +118,9 @@ class AdminVehicleSpecController extends Controller
             'transmission' => 'required|string|max:50',
             'fuel_type' => 'required|string|max:50',
             'seat_capacity' => 'required|integer',
+            'cargo_capacity_kg' => 'nullable|integer',
+            'gvwr_kg' => 'nullable|integer',
+            'axle_count' => 'nullable|integer',
         ]);
 
         $vehicleSpec->update($request->all());

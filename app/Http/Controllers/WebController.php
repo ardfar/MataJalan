@@ -114,6 +114,14 @@ class WebController extends Controller
                     $baseScore = max(0, $baseScore - 10);
                 }
             }
+        } elseif (($vehicle->type === 'truck' || $vehicle->type === 'bus') && $spec) {
+             // For Commercial Vehicles, safety and maintenance are critical.
+             // If rating is low, we penalize heavily especially for Heavy Duty
+             if ($avgRating < 3.0) {
+                 if ($spec->category === 'Heavy Duty Truck' || $spec->category === 'Intercity Coach') {
+                     $baseScore = max(0, $baseScore - 15);
+                 }
+             }
         }
 
         return $baseScore;
@@ -136,6 +144,12 @@ class WebController extends Controller
                 $highThreshold = 3.0; // Stricter: < 3.0 is HIGH
                 $mediumThreshold = 4.5; // Stricter: < 4.5 is MEDIUM
             }
+        } elseif (($vehicle->type === 'truck' || $vehicle->type === 'bus') && $spec) {
+             // Commercial vehicles are high risk if not driven well
+             if ($spec->category === 'Heavy Duty Truck' || $spec->category === 'Intercity Coach') {
+                 $highThreshold = 3.2; // Very Strict: < 3.2 is HIGH
+                 $mediumThreshold = 4.5;
+             }
         }
 
         if ($avgRating < $highThreshold) $threatLevel = 'HIGH';
@@ -363,14 +377,15 @@ class WebController extends Controller
 
         $carBrands = VehicleSpec::AVAILABLE_CAR_BRANDS;
         $motorcycleBrands = VehicleSpec::AVAILABLE_MOTORCYCLE_BRANDS;
+        $commercialBrands = VehicleSpec::AVAILABLE_COMMERCIAL_BRANDS;
 
-        return view('vehicle.create', compact('plate_number', 'carBrands', 'motorcycleBrands'));
+        return view('vehicle.create', compact('plate_number', 'carBrands', 'motorcycleBrands', 'commercialBrands'));
     }
 
     public function store(Request $request, $identifier)
     {
         $request->validate([
-            'type' => 'required|in:car,motorcycle',
+            'type' => 'required|in:car,motorcycle,truck,bus',
             'make' => 'required|string',
             'model' => 'required|string',
             'year' => 'required|integer|min:1900|max:'.(date('Y')+1),

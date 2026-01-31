@@ -18,13 +18,22 @@
              type: '{{ old('type', 'car') }}',
              carBrands: {!! json_encode($carBrands) !!},
              motorcycleBrands: {!! json_encode($motorcycleBrands) !!},
+             commercialBrands: {!! json_encode($commercialBrands) !!},
              carCategories: {!! json_encode($carCategories) !!},
              motorcycleCategories: {!! json_encode($motorcycleCategories) !!},
+             truckCategories: {!! json_encode($truckCategories) !!},
+             busCategories: {!! json_encode($busCategories) !!},
              get currentBrands() {
-                 return this.type === 'car' ? this.carBrands : this.motorcycleBrands;
+                 if (this.type === 'car') return this.carBrands;
+                 if (this.type === 'motorcycle') return this.motorcycleBrands;
+                 return this.commercialBrands;
              },
              get currentCategories() {
-                 return this.type === 'car' ? this.carCategories : this.motorcycleCategories;
+                 if (this.type === 'car') return this.carCategories;
+                 if (this.type === 'motorcycle') return this.motorcycleCategories;
+                 if (this.type === 'truck') return this.truckCategories;
+                 if (this.type === 'bus') return this.busCategories;
+                 return [];
              }
          }">
         <div class="p-8">
@@ -49,6 +58,14 @@
                         <label class="inline-flex items-center cursor-pointer">
                             <input type="radio" name="type" value="motorcycle" x-model="type" class="form-radio text-cyan-600 bg-slate-950 border-slate-700 focus:ring-cyan-500">
                             <span class="ml-2 text-slate-300 font-mono text-sm">MOTORCYCLE</span>
+                        </label>
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="radio" name="type" value="truck" x-model="type" class="form-radio text-cyan-600 bg-slate-950 border-slate-700 focus:ring-cyan-500">
+                            <span class="ml-2 text-slate-300 font-mono text-sm">TRUCK</span>
+                        </label>
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="radio" name="type" value="bus" x-model="type" class="form-radio text-cyan-600 bg-slate-950 border-slate-700 focus:ring-cyan-500">
+                            <span class="ml-2 text-slate-300 font-mono text-sm">BUS</span>
                         </label>
                     </div>
                     @error('type') <p class="mt-1 text-xs text-red-400 font-mono">{{ $message }}</p> @enderror
@@ -131,6 +148,30 @@
                         <input type="number" name="seat_capacity" id="seat_capacity" value="{{ old('seat_capacity') }}" required min="1" max="60"
                             class="block w-full px-4 py-2 border border-slate-700 rounded bg-slate-950 text-slate-100 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 font-mono text-sm placeholder-slate-700">
                         @error('seat_capacity') <p class="mt-1 text-xs text-red-400 font-mono">{{ $message }}</p> @enderror
+                    </div>
+
+                    <!-- Cargo Capacity (Truck/Bus) -->
+                    <div x-show="type === 'truck' || type === 'bus'">
+                        <label for="cargo_capacity_kg" class="block font-mono font-bold text-xs text-cyan-700 uppercase tracking-wide mb-2">CARGO CAPACITY (KG)</label>
+                        <input type="number" name="cargo_capacity_kg" id="cargo_capacity_kg" value="{{ old('cargo_capacity_kg') }}"
+                            class="block w-full px-4 py-2 border border-slate-700 rounded bg-slate-950 text-slate-100 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 font-mono text-sm placeholder-slate-700">
+                        @error('cargo_capacity_kg') <p class="mt-1 text-xs text-red-400 font-mono">{{ $message }}</p> @enderror
+                    </div>
+
+                    <!-- GVWR (Truck/Bus) -->
+                    <div x-show="type === 'truck' || type === 'bus'">
+                        <label for="gvwr_kg" class="block font-mono font-bold text-xs text-cyan-700 uppercase tracking-wide mb-2">GVWR (KG)</label>
+                        <input type="number" name="gvwr_kg" id="gvwr_kg" value="{{ old('gvwr_kg') }}"
+                            class="block w-full px-4 py-2 border border-slate-700 rounded bg-slate-950 text-slate-100 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 font-mono text-sm placeholder-slate-700">
+                        @error('gvwr_kg') <p class="mt-1 text-xs text-red-400 font-mono">{{ $message }}</p> @enderror
+                    </div>
+
+                    <!-- Axle Count (Truck/Bus) -->
+                    <div x-show="type === 'truck' || type === 'bus'">
+                        <label for="axle_count" class="block font-mono font-bold text-xs text-cyan-700 uppercase tracking-wide mb-2">AXLE COUNT</label>
+                        <input type="number" name="axle_count" id="axle_count" value="{{ old('axle_count') }}"
+                            class="block w-full px-4 py-2 border border-slate-700 rounded bg-slate-950 text-slate-100 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 font-mono text-sm placeholder-slate-700">
+                        @error('axle_count') <p class="mt-1 text-xs text-red-400 font-mono">{{ $message }}</p> @enderror
                     </div>
 
                     <!-- Engine CC -->
